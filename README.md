@@ -9,7 +9,21 @@
 An advanced, lightweight, privacy-focused Android application for changing DNS servers and tunneling DNS queries securely via **DNS-over-HTTPS (DoH)**. Built natively with Kotlin and `VpnService` to route only DNS traffic without slowing down overall network bandwidth or intercepting general device traffic.
 
 ---
+## 📑 Table of Contents
 
+- [Key Features](#-key-features)
+- [Download](#-download)
+- [Architecture & How It Works](#️-architecture--how-it-works)
+- [Screenshots](#-screenshots)
+- [Building & Installation](#️-building--installation)
+- [Security & Privacy](#-security--privacy)
+- [Roadmap](#️-roadmap)
+- [Contributing](#-contributing)
+- [Disclaimer](#️-disclaimer)
+- [Support & Contact](#-support--contact)
+- [License](#-license)
+
+---
 ## 🌟 Key Features
 
 - 🛡️ **Privacy First & Secure DoH**: Supports encrypted DNS-over-HTTPS (DoH) queries to prevent DNS spoofing, eavesdropping, and ISP hijacking.
@@ -31,7 +45,13 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 - 🔄 **Auto-Connect on Boot**: Optional background service startup after device reboot.
 
 ---
+## 📥 Download
 
+Get the latest signed APK from the [Releases](https://github.com/SFDNSAPP/sfdns-pro/releases) page — no need to build from source.
+
+[![Latest Release](https://img.shields.io/github/v/release/SFDNSAPP/sfdns-pro?label=Latest%20Release&color=blue)](https://github.com/SFDNSAPP/sfdns-pro/releases/latest)
+
+---
 ## 🏗️ Architecture & How It Works
 
 1. **Android VpnService Loop**:
@@ -82,7 +102,48 @@ side menu : <img width="1080" height="2340" alt="1000027459" src="https://github
 - Zero user data collection or telemetry analytics.
 
 ---
+## 🗺️ Roadmap
 
+- [ ] Network-aware optimization — detect the active network (Wi-Fi, mobile data, etc.) and apply a tailored profile/behavior for each
+- [ ] Turkish and French language support added to the UI
+- [ ] Stronger and more reliable DNS servers added to the default list
+- [ ] Split-tunneling support (per-app VPN routing)
+- [ ] Ping/latency history graph
+- [ ] Export/import custom DNS profiles
+
+Have an idea? Open an [issue](https://github.com/SFDNSAPP/sfdns-pro/issues) with the `enhancement` label.
+
+---
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m "Add: your feature"`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+Please keep code style consistent with the existing Kotlin conventions and test your changes before submitting.
+
+---
+## ⚖️ Disclaimer
+
+This application only changes DNS resolution and does not route or inspect general internet traffic. It is provided for privacy, security, and connectivity purposes.
+
+Users are responsible for complying with the laws and regulations of their country regarding internet usage and DNS/VPN tools. The developers assume no liability for misuse of this application.
+
+---
+## 💬 Support & Contact
+
+- 🐛 Found a bug? Open an [Issue](https://github.com/SFDNSAPP/sfdns-pro/issues)
+- 💡 Have a feature request? Use the `enhancement` label on Issues
+- 📧 Email: [sfdnsapp@gmail.com](mailto:sfdnsapp@gmail.com)
+- 📢 Telegram Channel: [@sfdnsapp](https://t.me/sfdnsapp)
+
+⭐ If you find this project useful, consider giving it a star!
+
+---
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
