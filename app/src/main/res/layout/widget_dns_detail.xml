@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_detail_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget_cyber"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Header Row -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_alignParentStart="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_lightning"
+                android:contentDescription="SFDNS" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SFDNS Pro"
+                android:textColor="#06B9D4"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_alignParentEnd="true">
+
+            <ImageView
+                android:id="@+id/widget_detail_status_dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:src="@drawable/bg_widget_badge_off"
+                android:layout_marginEnd="6dp"
+                android:contentDescription="Status Indicator" />
+
+            <TextView
+                android:id="@+id/widget_detail_status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="غیرفعال"
+                android:textColor="#EF4444"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- Content Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:layout_marginVertical="8dp">
+
+        <TextView
+            android:id="@+id/widget_detail_dns_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="سرور: Cloudflare"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_detail_dns_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="IP: 1.1.1.1 | 1.0.0.1"
+            android:textColor="#94A3B8"
+            android:textSize="11sp"
+            android:layout_marginTop="2dp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <!-- Action Button -->
+    <TextView
+        android:id="@+id/widget_detail_btn_toggle"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_widget_button"
+        android:text="⚡ اتصال سریع دی‌ان‌اس"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

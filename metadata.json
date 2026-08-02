@@ -1,0 +1,6 @@
+{
+  "name": "SFDNS",
+  "description": "A high performance, ultra secure DNS changer for Android featuring interactive speed-testing, cyberpunk UI aesthetics, and advanced gaming optimizations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
