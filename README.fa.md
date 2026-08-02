@@ -83,24 +83,9 @@
 - در برخی نسخه‌های اندروید اعلان دائمی VPN از طرف سیستم نمایش داده می‌شود که برای عملکرد مورد نیاز است.
 
 ---
-## 🛠️ ساخت و نصب
 
 ### پیش‌نیازها
-- Android Studio (Ladybug یا جدیدتر)
-- JDK 17 یا 21
-- Android SDK 36 (Min SDK 24)
-
-### مراحل
-1. مخزن را کلون کنید:
-```bash
-git clone https://github.com/SFDNSAPP/sfdns-pro.git
-```
-2. پروژه را در Android Studio باز کنید.
-3. APK را با Gradle بسازید:
-```bash
-./gradlew assembleRelease
-```
-4. APK تولیدشده را نصب کنید.
+- Android +7 
 
 ---
 ## 🔒 امنیت و حریم خصوصی
