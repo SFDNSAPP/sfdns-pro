@@ -1,4 +1,4 @@
-package com.example
+package com.sfdnsapp.pro
 
 import org.junit.Assert.*
 import org.junit.Test

@@ -1,4 +1,4 @@
-package com.example
+package com.sfdnsapp.pro
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,6 +11,7 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.service.quicksettings.TileService
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +32,10 @@ class DnsVpnService : VpnService() {
     private var dohProxyJob: Job? = null
 
     companion object {
-        const val ACTION_START = "com.sfdnspro.securevpn.START"
-        const val ACTION_STOP = "com.sfdnspro.securevpn.STOP"
+        private const val TAG = "DnsVpnService"
+
+        const val ACTION_START = "com.sfdnsapp.pro.securevpn.START"
+        const val ACTION_STOP = "com.sfdnsapp.pro.securevpn.STOP"
         const val EXTRA_DNS_NAME = "dns_name"
         const val EXTRA_PRIMARY_DNS = "primary_dns"
         const val EXTRA_SECONDARY_DNS = "secondary_dns"
@@ -50,6 +53,23 @@ class DnsVpnService : VpnService() {
 
         fun protectSocket(socket: java.net.Socket): Boolean {
             return instance?.protect(socket) ?: true
+        }
+
+        /**
+         * Resolves the corresponding DoH (DNS-over-HTTPS) endpoint URL for a given DNS server IP.
+         */
+        fun resolveDohEndpointUrl(dnsIp: String): String {
+            return when (dnsIp.trim()) {
+                "1.1.1.1", "1.0.0.1" -> "https://1.1.1.1/dns-query"
+                "8.8.8.8", "8.8.4.4" -> "https://dns.google/dns-query"
+                "9.9.9.9" -> "https://dns.quad9.net/dns-query"
+                "178.22.122.100", "185.51.200.2" -> "https://free.shecan.ir/dns-query"
+                "78.157.42.100", "78.157.42.101" -> "https://dns.electro.ir/dns-query"
+                "10.201.201.201", "10.201.201.202" -> "https://dns.radar.game/dns-query"
+                "10.202.10.202", "10.202.10.102" -> "https://dns.403.online/dns-query"
+                "185.55.226.26", "185.55.225.25" -> "https://dns.begzar.ir/dns-query"
+                else -> "https://1.1.1.1/dns-query"
+            }
         }
     }
 
@@ -100,15 +120,14 @@ class DnsVpnService : VpnService() {
         }
     }
 
-    private fun startVpn(dnsName: String, rawPrimaryDns: String, rawSecondaryDns: String, primaryIpv6: String = "", secondaryIpv6: String = "") {
-        try {
-            drainJob?.cancel()
-            speedJob?.cancel()
-            vpnInterface?.close()
-        } catch (e: Exception) {
-            // Ignore
-        }
-        vpnInterface = null
+    private fun startVpn(
+        dnsName: String,
+        rawPrimaryDns: String,
+        rawSecondaryDns: String,
+        primaryIpv6: String = "",
+        secondaryIpv6: String = ""
+    ) {
+        cleanupVpnResources()
 
         val primaryDns = if (isValidIp(rawPrimaryDns)) rawPrimaryDns.trim() else "178.22.122.100"
         val secondaryDns = if (isValidIp(rawSecondaryDns)) rawSecondaryDns.trim() else "185.51.200.2"
@@ -121,7 +140,6 @@ class DnsVpnService : VpnService() {
         isRunning = true
         createNotificationChannel()
 
-        // Setup early notification
         val displayDnsTitle = if (isDoh) "$dnsName (DoH)" else dnsName
         updateNotification(displayDnsTitle, primaryDns, "⬇️ 0.0 KB/s  |  ⬆️ 0.0 KB/s")
 
@@ -131,89 +149,78 @@ class DnsVpnService : VpnService() {
 
         try {
             val builder = Builder()
-            builder.setSession("SFDNS")
+            builder.setSession("SFDNS Pro")
             builder.addAddress("10.0.0.1", 24)
 
-            // Local DNS-over-VPN Service: Allows non-DNS traffic to bypass the TUN interface
-            // so game and web IP packets flow directly through the primary network adapter,
-            // while DNS resolution requests are directed to custom anti-sanction/low-latency DNS resolvers.
+            // Local DNS-over-VPN Service: Allows non-DNS IP traffic to bypass the TUN interface
+            // so latency and bandwidth are unaffected for apps & gaming.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 builder.allowBypass()
             }
 
-            val prefs = getSharedPreferences("sfdns_prefs", MODE_PRIVATE)
             val isIpv6 = prefs.getSafeBoolean("ipv6", false)
             val killSwitch = prefs.getSafeBoolean("kill_switch", false)
             val carrierOpt = prefs.getSafeString("carrier_opt", "auto")
 
-            // Dynamic high performance MTU tuning to eliminate package fragmentation & latency
+            // Dynamic high performance MTU tuning
             val mtuVal = when (carrierOpt) {
                 "mci" -> 1400
                 "mtn" -> 1420
                 "wifi" -> 1480
-                else -> 1420 // Optimal general standard for low latency
+                else -> 1420
             }
             builder.setMtu(mtuVal)
 
-            // If IPv6 is enabled globally, OR the DNS has valid IPv6 addresses provided, we route IPv6 traffic
+            // Route IPv6 if globally enabled or explicitly specified
             val shouldAddIpv6Address = isIpv6 || validPrimaryIpv6.isNotEmpty() || validSecondaryIpv6.isNotEmpty() || primaryDns.contains(":") || secondaryDns.contains(":")
 
             if (shouldAddIpv6Address) {
                 try {
                     builder.addAddress("fd00::1", 128)
                 } catch (e: Exception) {
-                    android.util.Log.e("DnsVpnService", "Failed to add IPv6 address fd00::1 to VPN interface", e)
+                    Log.e(TAG, "Failed to add IPv6 interface address", e)
                 }
             }
 
-            // Direct device DNS queries to our selected high-performance servers
+            // Primary and Secondary IPv4 DNS resolvers
             try {
-                if (primaryDns.isNotEmpty()) {
-                    builder.addDnsServer(primaryDns)
-                }
+                if (primaryDns.isNotEmpty()) builder.addDnsServer(primaryDns)
             } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "Failed to add primary IPv4 DNS: $primaryDns", e)
+                Log.e(TAG, "Failed to add primary IPv4 DNS: $primaryDns", e)
             }
             try {
-                if (secondaryDns.isNotEmpty()) {
-                    builder.addDnsServer(secondaryDns)
-                }
+                if (secondaryDns.isNotEmpty()) builder.addDnsServer(secondaryDns)
             } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "Failed to add secondary IPv4 DNS: $secondaryDns", e)
+                Log.e(TAG, "Failed to add secondary IPv4 DNS: $secondaryDns", e)
             }
 
-            // If we have explicit valid IPv6 DNS, add them!
+            // Custom IPv6 DNS resolvers
             try {
-                if (validPrimaryIpv6.isNotEmpty()) {
-                    builder.addDnsServer(validPrimaryIpv6)
-                }
+                if (validPrimaryIpv6.isNotEmpty()) builder.addDnsServer(validPrimaryIpv6)
             } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "Failed to add primary IPv6 DNS: $validPrimaryIpv6", e)
+                Log.e(TAG, "Failed to add primary IPv6 DNS: $validPrimaryIpv6", e)
             }
             try {
-                if (validSecondaryIpv6.isNotEmpty()) {
-                    builder.addDnsServer(validSecondaryIpv6)
-                }
+                if (validSecondaryIpv6.isNotEmpty()) builder.addDnsServer(validSecondaryIpv6)
             } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "Failed to add secondary IPv6 DNS: $validSecondaryIpv6", e)
+                Log.e(TAG, "Failed to add secondary IPv6 DNS: $validSecondaryIpv6", e)
             }
 
-            // Fallback default IPv6 resolvers if user has IPv6 globally enabled but using default IPv4 DNS like Cloudflare/Google
+            // Fallback IPv6 resolvers for Cloudflare/Google if IPv6 is enabled globally
             if (isIpv6 && validPrimaryIpv6.isEmpty() && validSecondaryIpv6.isEmpty()) {
                 if (primaryDns == "1.1.1.1" || primaryDns == "1.0.0.1") {
-                    try { builder.addDnsServer("2606:4700:4700::1111") } catch (e: Exception) {}
+                    try { builder.addDnsServer("2606:4700:4700::1111") } catch (_: Exception) {}
                 } else if (primaryDns == "8.8.8.8") {
-                    try { builder.addDnsServer("2001:4860:4860::8888") } catch (e: Exception) {}
+                    try { builder.addDnsServer("2001:4860:4860::8888") } catch (_: Exception) {}
                 }
             }
 
-            if (killSwitch) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    builder.setBlocking(true)
-                }
+            // Enable Kill Switch blocking if configured
+            if (killSwitch && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                builder.setBlocking(true)
             }
 
-            // Apply Per-App Tunneling / Split Tunneling Rules
+            // Apply Per-App Split Tunneling Rules
             val splitTunnelEnabled = prefs.getSafeBoolean("split_tunnel_enabled", false)
             val splitTunnelMode = prefs.getSafeString("split_tunnel_mode", "disallowed")
             val splitTunnelAppsStr = prefs.getSafeString("split_tunnel_apps", "")
@@ -222,53 +229,40 @@ class DnsVpnService : VpnService() {
                 val apps = splitTunnelAppsStr.split(",").filter { it.isNotEmpty() }
                 if (splitTunnelMode == "allowed") {
                     for (app in apps) {
-                        try {
-                            builder.addAllowedApplication(app)
-                        } catch (e: Exception) {
-                            // Package not found or uninstalled
-                        }
+                        try { builder.addAllowedApplication(app) } catch (_: Exception) {}
                     }
                 } else {
                     for (app in apps) {
-                        try {
-                            builder.addDisallowedApplication(app)
-                        } catch (e: Exception) {
-                            // Package not found or uninstalled
-                        }
+                        try { builder.addDisallowedApplication(app) } catch (_: Exception) {}
                     }
                 }
             }
 
-            // If DoH is enabled, route DNS traffic to primary/secondary DNS through TUN interface so DoH proxy intercepts and encrypts it
+            // Route DNS IPs into TUN interface for DoH intercept when DoH is active
             if (isDoh) {
                 try {
-                    if (primaryDns.isNotEmpty()) {
-                        builder.addRoute(primaryDns, 32)
-                    }
+                    if (primaryDns.isNotEmpty()) builder.addRoute(primaryDns, 32)
                 } catch (e: Exception) {
-                    android.util.Log.e("DnsVpnService", "Failed to add route for DoH: $primaryDns", e)
+                    Log.e(TAG, "Failed to add route for DoH: $primaryDns", e)
                 }
                 try {
-                    if (secondaryDns.isNotEmpty()) {
-                        builder.addRoute(secondaryDns, 32)
-                    }
+                    if (secondaryDns.isNotEmpty()) builder.addRoute(secondaryDns, 32)
                 } catch (e: Exception) {
-                    android.util.Log.e("DnsVpnService", "Failed to add route for DoH: $secondaryDns", e)
+                    Log.e(TAG, "Failed to add route for DoH: $secondaryDns", e)
                 }
             }
 
             try {
                 vpnInterface = builder.establish()
             } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "builder.establish() exception: ${e.message}", e)
+                Log.e(TAG, "builder.establish() failed: ${e.message}", e)
             }
 
             if (vpnInterface == null) {
-                android.util.Log.w("DnsVpnService", "builder.establish() returned null (VPN permission denied or system unable to establish VPN). Stopping service.")
+                Log.w(TAG, "builder.establish() returned null. Stopping service.")
                 stopVpn()
                 return
             } else {
-                // Start draining / processing the TUN interface
                 val fd = vpnInterface?.fileDescriptor
                 if (fd != null) {
                     drainJob = serviceScope.launch(Dispatchers.IO) {
@@ -283,7 +277,6 @@ class DnsVpnService : VpnService() {
                                     continue
                                 }
 
-                                // If DoH is active and packet is IPv4 UDP to port 53
                                 if (isDoh && read >= 28 && buffer[9].toInt() == 17) {
                                     val destPort = ((buffer[22].toInt() and 0xFF) shl 8) or (buffer[23].toInt() and 0xFF)
                                     if (destPort == 53) {
@@ -294,44 +287,30 @@ class DnsVpnService : VpnService() {
                                     }
                                 }
                             }
-                        } catch (e: Exception) {
-                            // Ignore stream/socket closed exceptions
+                        } catch (_: Exception) {
+                            // Stream closed on shutdown
                         }
                     }
                 }
             }
 
-            // Broadcast status to UI (restricted to our own app package)
-            val statusIntent = Intent("$packageName.VPN_STATUS").apply {
-                putExtra("status", "connected")
-                setPackage(packageName)
-            }
-            sendBroadcast(statusIntent)
-
-            // Refresh Quick Settings Tile & Home Widgets state
-            try {
-                DnsWidgetHelper.updateAllWidgets(this@DnsVpnService)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    TileService.requestListeningState(
-                        this@DnsVpnService,
-                        ComponentName(this@DnsVpnService, DnsTileService::class.java)
-                    )
-                }
-            } catch (e: Exception) {
-                // Ignore
-            }
-
-            // Launch periodic background speed monitoring safely
-            try {
-                startSpeedMonitor(dnsName, primaryDns)
-            } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "Failed to start speed monitor", e)
-            }
+            notifyVpnStatusChanged("connected")
+            startSpeedMonitor(dnsName, primaryDns)
 
         } catch (e: Exception) {
-            android.util.Log.e("DnsVpnService", "startVpn exception: ${e.message}", e)
+            Log.e(TAG, "startVpn exception: ${e.message}", e)
             stopVpn()
         }
+    }
+
+    private fun cleanupVpnResources() {
+        try {
+            drainJob?.cancel()
+            speedJob?.cancel()
+            dohProxyJob?.cancel()
+            vpnInterface?.close()
+        } catch (_: Exception) {}
+        vpnInterface = null
     }
 
     private fun startSpeedMonitor(dnsName: String, primaryDns: String) {
@@ -403,9 +382,7 @@ class DnsVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        // Color highlight for a high-tech neon green look: #FF10B981
         val accentColor = 0xFF10B981.toInt()
-
         val titleText = "⚡ SFDNS Pro - تحریم‌شکن فعال"
 
         val notification = NotificationCompat.Builder(this, channelId)
@@ -415,7 +392,7 @@ class DnsVpnService : VpnService() {
             .setColor(accentColor)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .setOnlyAlertOnce(true) // Prevent annoying notification alerts/vibrations on speed update
+            .setOnlyAlertOnce(true)
             .setShowWhen(true)
             .setUsesChronometer(true)
             .addAction(
@@ -429,13 +406,13 @@ class DnsVpnService : VpnService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 try {
                     startForeground(1, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     startForeground(1, notification)
                 }
             } else {
                 startForeground(1, notification)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             manager.notify(1, notification)
         }
@@ -449,18 +426,7 @@ class DnsVpnService : VpnService() {
             if (packet.size < dnsOffset) return
 
             val dnsQuery = packet.copyOfRange(dnsOffset, packet.size)
-
-            val dohUrlStr = when {
-                primaryDns == "1.1.1.1" || primaryDns == "1.0.0.1" -> "https://1.1.1.1/dns-query"
-                primaryDns == "8.8.8.8" || primaryDns == "8.8.4.4" -> "https://dns.google/dns-query"
-                primaryDns == "9.9.9.9" -> "https://dns.quad9.net/dns-query"
-                primaryDns == "178.22.122.100" || primaryDns == "185.51.200.2" -> "https://free.shecan.ir/dns-query"
-                primaryDns == "78.157.42.100" || primaryDns == "78.157.42.101" -> "https://dns.electro.ir/dns-query"
-                primaryDns == "10.201.201.201" || primaryDns == "10.201.201.202" -> "https://dns.radar.game/dns-query"
-                primaryDns == "10.202.10.202" || primaryDns == "10.202.10.102" -> "https://dns.403.online/dns-query"
-                primaryDns == "185.55.226.26" || primaryDns == "185.55.225.25" -> "https://dns.begzar.ir/dns-query"
-                else -> "https://1.1.1.1/dns-query"
-            }
+            val dohUrlStr = resolveDohEndpointUrl(primaryDns)
 
             val url = java.net.URL(dohUrlStr)
             val conn = url.openConnection() as javax.net.ssl.HttpsURLConnection
@@ -484,27 +450,26 @@ class DnsVpnService : VpnService() {
                 val reply = ByteArray(totalLen)
 
                 // IPv4 Header
-                reply[0] = 0x45.toByte() // Version 4, IHL 5
+                reply[0] = 0x45.toByte()
                 reply[1] = 0x00.toByte()
                 reply[2] = ((totalLen shr 8) and 0xFF).toByte()
                 reply[3] = (totalLen and 0xFF).toByte()
                 reply[4] = 0x12.toByte()
                 reply[5] = 0x34.toByte()
-                reply[6] = 0x40.toByte() // Don't Fragment
+                reply[6] = 0x40.toByte()
                 reply[7] = 0x00.toByte()
-                reply[8] = 64.toByte() // TTL
-                reply[9] = 17.toByte() // UDP Protocol
+                reply[8] = 64.toByte()
+                reply[9] = 17.toByte()
 
-                // Swap IPs: Src IP = original Dst IP (bytes 16..19), Dst IP = original Src IP (bytes 12..15)
+                // Swap Src & Dst IP addresses
                 System.arraycopy(packet, 16, reply, 12, 4)
                 System.arraycopy(packet, 12, reply, 16, 4)
 
-                // Calculate IP Header Checksum
                 val checksum = computeIpChecksum(reply, 20)
                 reply[10] = ((checksum shr 8) and 0xFF).toByte()
                 reply[11] = (checksum and 0xFF).toByte()
 
-                // UDP Header: Swap Ports: Src Port = original Dst Port (bytes 22..23), Dst Port = original Src Port (bytes 20..21)
+                // Swap Src & Dst Ports
                 reply[20] = packet[22]
                 reply[21] = packet[23]
                 reply[22] = packet[20]
@@ -513,10 +478,9 @@ class DnsVpnService : VpnService() {
                 val udpLen = 8 + dnsResponse.size
                 reply[24] = ((udpLen shr 8) and 0xFF).toByte()
                 reply[25] = (udpLen and 0xFF).toByte()
-                reply[26] = 0x00.toByte() // Checksum optional in IPv4
+                reply[26] = 0x00.toByte()
                 reply[27] = 0x00.toByte()
 
-                // Payload
                 System.arraycopy(dnsResponse, 0, reply, 28, dnsResponse.size)
 
                 synchronized(outputStream) {
@@ -524,8 +488,8 @@ class DnsVpnService : VpnService() {
                     outputStream.flush()
                 }
             }
-        } catch (e: Exception) {
-            // Ignore transient DoH packet errors
+        } catch (_: Exception) {
+            // Ignore transient packet timeouts
         }
     }
 
@@ -533,7 +497,7 @@ class DnsVpnService : VpnService() {
         var sum = 0
         var i = 0
         while (i < length) {
-            if (i != 10) { // skip checksum field itself
+            if (i != 10) {
                 val word = ((header[i].toInt() and 0xFF) shl 8) or (header[i + 1].toInt() and 0xFF)
                 sum += word
             }
@@ -548,17 +512,7 @@ class DnsVpnService : VpnService() {
     private fun startDohProxy(primaryDns: String) {
         dohProxyJob?.cancel()
         dohProxyJob = serviceScope.launch(Dispatchers.IO) {
-            val dohUrlStr = when {
-                primaryDns == "1.1.1.1" || primaryDns == "1.0.0.1" -> "https://1.1.1.1/dns-query"
-                primaryDns == "8.8.8.8" || primaryDns == "8.8.4.4" -> "https://dns.google/dns-query"
-                primaryDns == "9.9.9.9" -> "https://dns.quad9.net/dns-query"
-                primaryDns == "178.22.122.100" || primaryDns == "185.51.200.2" -> "https://free.shecan.ir/dns-query"
-                primaryDns == "78.157.42.100" || primaryDns == "78.157.42.101" -> "https://dns.electro.ir/dns-query"
-                primaryDns == "10.201.201.201" || primaryDns == "10.201.201.202" -> "https://dns.radar.game/dns-query"
-                primaryDns == "10.202.10.202" || primaryDns == "10.202.10.102" -> "https://dns.403.online/dns-query"
-                primaryDns == "185.55.226.26" || primaryDns == "185.55.225.25" -> "https://dns.begzar.ir/dns-query"
-                else -> "https://1.1.1.1/dns-query"
-            }
+            val dohUrlStr = resolveDohEndpointUrl(primaryDns)
 
             var serverSocket: java.net.DatagramSocket? = null
             try {
@@ -596,53 +550,29 @@ class DnsVpnService : VpnService() {
                                     val replyPacket = java.net.DatagramPacket(responseBytes, responseBytes.size, clientAddress, clientPort)
                                     serverSocket?.send(replyPacket)
                                 }
-                            } catch (e: Exception) {
-                                // Ignore transient DoH packet errors
-                            }
+                            } catch (_: Exception) {}
                         }
-                    } catch (e: java.net.SocketTimeoutException) {
-                        // Timeout
+                    } catch (_: java.net.SocketTimeoutException) {
+                        // Loop timeout
                     } catch (e: Exception) {
                         if (!isRunning) break
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("DnsVpnService", "startDohProxy error", e)
+                Log.e(TAG, "startDohProxy socket exception", e)
             } finally {
-                try { serverSocket?.close() } catch (e: Exception) {}
+                try { serverSocket?.close() } catch (_: Exception) {}
             }
         }
     }
 
-    private fun stopVpn() {
-        isRunning = false
-        speedJob?.cancel()
-        speedJob = null
-        drainJob?.cancel()
-        drainJob = null
-        dohProxyJob?.cancel()
-        dohProxyJob = null
-        try {
-            vpnInterface?.close()
-        } catch (e: Exception) {
-            // Ignore
-        }
-        vpnInterface = null
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
-        stopSelf()
-
+    private fun notifyVpnStatusChanged(status: String) {
         val statusIntent = Intent("$packageName.VPN_STATUS").apply {
-            putExtra("status", "disconnected")
+            putExtra("status", status)
             setPackage(packageName)
         }
         sendBroadcast(statusIntent)
 
-        // Refresh Quick Settings Tile & Home Widgets state
         try {
             DnsWidgetHelper.updateAllWidgets(this)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -651,9 +581,22 @@ class DnsVpnService : VpnService() {
                     ComponentName(this, DnsTileService::class.java)
                 )
             }
-        } catch (e: Exception) {
-            // Ignore
+        } catch (_: Exception) {}
+    }
+
+    private fun stopVpn() {
+        isRunning = false
+        cleanupVpnResources()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
         }
+        stopSelf()
+
+        notifyVpnStatusChanged("disconnected")
     }
 
     override fun onDestroy() {
@@ -677,3 +620,4 @@ class DnsVpnService : VpnService() {
         }
     }
 }
+

@@ -89,7 +89,7 @@
             android:name=".DnsWidgetActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.sfdnspro.ACTION_TOGGLE_DNS" />
+                <action android:name="com.sfdnsapp.pro.ACTION_TOGGLE_DNS" />
             </intent-filter>
         </receiver>
 

@@ -1,10 +1,10 @@
-package com.example
+package com.sfdnsapp.pro
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 
-class DnsDetailWidgetProvider : AppWidgetProvider() {
+class DnsQuickWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(
         context: Context,
@@ -12,6 +12,6 @@ class DnsDetailWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
-        DnsWidgetHelper.updateDetailWidgets(context, appWidgetManager, appWidgetIds)
+        DnsWidgetHelper.updateQuickWidgets(context, appWidgetManager, appWidgetIds)
     }
 }

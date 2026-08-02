@@ -1,4 +1,4 @@
-package com.example
+package com.sfdnsapp.pro
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -9,7 +9,7 @@ import android.widget.RemoteViews
 
 object DnsWidgetHelper {
 
-    const val ACTION_TOGGLE_DNS = "com.sfdnspro.ACTION_TOGGLE_DNS"
+    const val ACTION_TOGGLE_DNS = "com.sfdnsapp.pro.ACTION_TOGGLE_DNS"
 
     fun updateAllWidgets(context: Context) {
         val appWidgetManager = AppWidgetManager.getInstance(context)

@@ -1,4 +1,4 @@
-package com.example
+package com.sfdnsapp.pro
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -30,7 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.ui.theme.MyApplicationTheme
+import com.sfdnsapp.pro.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

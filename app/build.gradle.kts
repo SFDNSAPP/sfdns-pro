@@ -12,11 +12,11 @@ plugins {
 }
 
 android {
-  namespace = "com.example"
+  namespace = "com.sfdnsapp.pro"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.sfdns.secvpn"
+    applicationId = "com.sfdnsapp.pro"
     minSdk = 24
     targetSdk = 36
     versionCode = 24
