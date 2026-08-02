@@ -59,8 +59,7 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-   cd YOUR_REPOSITORY_NAME
+   git clone https://github.com/SFDNSAPP/sfdns-pro.git
    ```
 2. Open the project in **Android Studio**.
 3. Build the APK using Gradle:
