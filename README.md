@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
 [![UI](https://img.shields.io/badge/UI-Glassmorphic%20%2F%20WebView%20M3-darkgreen.svg)]()
 
-An advanced, lightweight, privacy-focused Android application for changing DNS servers and tunneling DNS queries securely via **DNS-over-HTTPS (DoH)**. Built natively with Kotlin and `VpnService` to route only DNS traffic without slowing down overall network bandwidth or intercepting general device traffic.
+An advanced, lightweight, privacy-focused Android application for changing DNS servers and tunneling DNS queries securely via **DNS-over-HTTPS (DoH)**. Built natively with Kotlin and `VpnService` to r[...] 
 
 ---
 
@@ -37,7 +37,7 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 1. **Android VpnService Loop**:
    The app establishes a local virtual TUN interface (`VpnService`). Rather than routing global IP traffic (`0.0.0.0/0`), it selectively intercepts DNS server destinations.
 2. **DNS Packet Draining & DoH Processing**:
-   When DoH is active, DNS queries captured from port 53 are converted into RFC 8484 compliant HTTPS POST messages sent over TLS to the selected DoH resolver (e.g. `https://1.1.1.1/dns-query`). The DNS response payload is packed back into an IPv4 UDP packet and returned to the application requestor.
+   When DoH is active, DNS queries captured from port 53 are converted into RFC 8484 compliant HTTPS POST messages sent over TLS to the selected DoH resolver (e.g. `https://1.1.1.1/dns-query`). The DN[...]
 3. **Zero Logs & Maximum Speed**:
    No data is stored, cached on disk, or transmitted to third-party tracking servers.
 
@@ -45,7 +45,15 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 
 ## 📱 Screenshots
 
-> *(Add screenshots of Main Dashboard, Server Selector, Quick Tile, and Home Screen Widget here)*
+پایین چهار تصویر از رابط برنامه قرار داده شده‌اند. اگر مایل بودی من خودِ تصاویر را هم در مسیر `assets/screenshots/` آپلود می‌کنم؛ فعلاً لینک‌ها به‌صورت مسیرهای محلی داخل مخزن درج شده‌اند.
+
+![Advanced Settings — تنظیمات پیشرفته](assets/screenshots/shot1.png "Advanced Settings")
+
+![Main Dashboard — داشبورد اصلی (Connected)](assets/screenshots/shot2.png "Main Dashboard")
+
+![Add Custom DNS — افزودن DNS سفارشی](assets/screenshots/shot3.png "Add Custom DNS")
+
+![Server Selector — انتخاب سرور‌ها](assets/screenshots/shot4.png "Server Selector")
 
 ---
 
