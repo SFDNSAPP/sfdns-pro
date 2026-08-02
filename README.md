@@ -45,7 +45,12 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 
 ## 📱 Screenshots
 
-> *(Add screenshots of Main Dashboard, Server Selector, Quick Tile, and Home Screen Widget here)*
+dashboard: <img width="1080" height="2340" alt="1000027453" src="https://github.com/user-attachments/assets/4e748ac6-c996-4091-bb73-fa192b69224c" />
+advance setting: <img width="1080" height="2340" alt="1000027461" src="https://github.com/user-attachments/assets/90834c62-2e21-4674-bbe2-c32a94181f77" />
+custom DNS: <img width="1080" height="2340" alt="1000027457" src="https://github.com/user-attachments/assets/bac20289-0678-482e-9653-5d15260142e0" />
+main DNS menu: <img width="1080" height="2340" alt="1000027455" src="https://github.com/user-attachments/assets/bbe9246c-e312-4831-a780-1794462f4ebe" />
+side menu : <img width="1080" height="2340" alt="1000027459" src="https://github.com/user-attachments/assets/c903e875-0eba-40fa-8902-a8235fa082e0" />
+
 
 ---
 
