@@ -1,5 +1,7 @@
 # DNS Changer & DoH Proxy for Android
 
+[English](README.md) • [فارسی](README.fa.md) • [العربية](README.ar.md) • [Русский](README.ru.md)
+
 [![Android](https://img.shields.io/badge/Platform-Android-green.svg?logo=android)](https://www.android.com)  [![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg?logo=kotlin)](https://kotlinlang.org)  [![MinSDK](https://img.shields.io/badge/Min%20SDK-24%2B-blue.svg)](https://developer.android.com/about/versions/nougat)  [![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)  [![UI](https://img.shields.io/badge/UI-Glassmorphic%20%2F%20WebView%20M3-darkgreen.svg)]()
 
 [![Latest Release](https://img.shields.io/github/v/release/SFDNSAPP/sfdns-pro?label=Latest%20Release&color=blue)](https://github.com/SFDNSAPP/sfdns-pro/releases/latest)  [![GitHub stars](https://img.shields.io/github/stars/SFDNSAPP/sfdns-pro?style=social)](https://github.com/SFDNSAPP/sfdns-pro/stargazers)  [![Open issues](https://img.shields.io/github/issues/SFDNSAPP/sfdns-pro?color=orange)](https://github.com/SFDNSAPP/sfdns-pro/issues)
