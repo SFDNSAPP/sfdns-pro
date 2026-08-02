@@ -45,13 +45,31 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 
 ## 📱 Screenshots
 
-پایین چهار تصویر از رابط برنامه قرار داده شده‌اند. اگر مایل بودی من خودِ تصاویر را هم در مسیر `assets/screenshots/` آپلود می‌کنم؛ فعلاً لینک‌ها به‌صورت مسیرهای محلی داخل مخزن درج شده‌اند.
+Below are labelled screenshots showing key parts of the app UI. Images are stored in `assets/screenshots/`.
+
+### 1) Advanced Settings — تنظیمات پیشرفته
+نمایش گزینه‌های پیشرفته مانند Kill Switch، DNS over HTTPS، IPv6 Support و ...
 
 ![Advanced Settings — تنظیمات پیشرفته](assets/screenshots/shot1.png "Advanced Settings")
 
+---
+
+### 2) Main Dashboard — داشبورد اصلی (Connected)
+مرکز کنترل برنامه با وضعیت اتصال، پینگ و آمار ترافیک.
+
 ![Main Dashboard — داشبورد اصلی (Connected)](assets/screenshots/shot2.png "Main Dashboard")
 
+---
+
+### 3) Add Custom DNS — افزودن DNS سفارشی
+فرم اضافه‌کردن DNS سفارشی: آدرس IPv4/IPv6 و نام DNS.
+
 ![Add Custom DNS — افزودن DNS سفارشی](assets/screenshots/shot3.png "Add Custom DNS")
+
+---
+
+### 4) Server Selector — انتخاب سرور‌ها
+لیست سرورهای پیش‌فرض و دکمهٔ Smart Connect و فیلترهای دسته‌بندی.
 
 ![Server Selector — انتخاب سرور‌ها](assets/screenshots/shot4.png "Server Selector")
 
