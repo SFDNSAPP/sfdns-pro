@@ -25,7 +25,10 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 - [Support & Contact](#-support--contact)
 - [License](#-license)
 
+our website: https://sfdns.dpdns.org 🌐
+
 ---
+
 ## 🌟 Key Features
 
 - 🛡️ **Privacy First & Secure DoH**: Supports encrypted DNS-over-HTTPS (DoH) queries to prevent DNS spoofing, eavesdropping, and ISP hijacking.
@@ -48,7 +51,7 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 ## 📥 Download
 
 Get the latest signed APK from the [Releases](https://github.com/SFDNSAPP/sfdns-pro/releases) page — no need to build from source.
-
+or download from our website: https://sfdns.dpdns.org 🌐
 ---
 ## 🏗️ Architecture & How It Works
 
@@ -77,7 +80,7 @@ Below are representative screenshots showing the main screens and settings. Clic
 3. Choose a resolver from the list or enter custom Primary/Secondary DNS addresses.
 4. Enable DoH in settings if you want encrypted DNS (recommended).
 5. Use the Quick Settings tile or widget for one-tap connect/disconnect.
-
+more information in our website: https://sfdns.dpdns.org 🌐
 Notes:
 - The app only intercepts DNS queries; normal traffic is not proxied.
 - On modern Android versions, the OS may prompt for a persistent VPN notification — this is required for operation.
@@ -155,7 +158,7 @@ Users are responsible for complying with the laws and regulations of their count
 - 💡 Feature requests? Use the `enhancement` label on Issues
 - 📧 Email: [sfdnsapp@gmail.com](mailto:sfdnsapp@gmail.com)
 - 📢 Telegram Channel: [@sfdnsapp](https://t.me/sfdnsapp)
-
+our website: https://sfdns.dpdns.org 🌐
 If you find this project useful, please consider starring the repo ⭐
 
 ---
