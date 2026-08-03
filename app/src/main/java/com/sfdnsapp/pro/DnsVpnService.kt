@@ -266,29 +266,47 @@ class DnsVpnService : VpnService() {
                 val fd = vpnInterface?.fileDescriptor
                 if (fd != null) {
                     drainJob = serviceScope.launch(Dispatchers.IO) {
-                        val inputStream = java.io.FileInputStream(fd)
-                        val outputStream = java.io.FileOutputStream(fd)
-                        val buffer = ByteArray(32768)
                         try {
-                            while (isRunning) {
-                                val read = inputStream.read(buffer)
-                                if (read <= 0) {
-                                    delay(15)
-                                    continue
-                                }
+                            java.io.FileInputStream(fd).use { inputStream ->
+                                java.io.FileOutputStream(fd).use { outputStream ->
+                                    val buffer = ByteArray(32768)
+                                    while (isRunning) {
+                                        val read = inputStream.read(buffer)
+                                        if (read <= 0) {
+                                            delay(15)
+                                            continue
+                                        }
 
-                                if (isDoh && read >= 28 && buffer[9].toInt() == 17) {
-                                    val destPort = ((buffer[22].toInt() and 0xFF) shl 8) or (buffer[23].toInt() and 0xFF)
-                                    if (destPort == 53) {
-                                        val packetData = buffer.copyOf(read)
-                                        serviceScope.launch(Dispatchers.IO) {
-                                            processDohPacket(packetData, outputStream, primaryDns)
+                                        if (isDoh && read >= 28) {
+                                            val version = (buffer[0].toInt() shr 4) and 0x0F
+                                            if (version == 4 && buffer[9].toInt() == 17) { // IPv4 UDP
+                                                val ipHeaderLen = (buffer[0].toInt() and 0x0F) * 4
+                                                if (read >= ipHeaderLen + 8) {
+                                                    val destPort = ((buffer[ipHeaderLen + 2].toInt() and 0xFF) shl 8) or (buffer[ipHeaderLen + 3].toInt() and 0xFF)
+                                                    if (destPort == 53) {
+                                                        val packetData = buffer.copyOf(read)
+                                                        serviceScope.launch(Dispatchers.IO) {
+                                                            processDohPacket(packetData, outputStream, primaryDns)
+                                                        }
+                                                    }
+                                                }
+                                            } else if (version == 6 && buffer[6].toInt() == 17) { // IPv6 UDP
+                                                if (read >= 48) {
+                                                    val destPort = ((buffer[42].toInt() and 0xFF) shl 8) or (buffer[43].toInt() and 0xFF)
+                                                    if (destPort == 53) {
+                                                        val packetData = buffer.copyOf(read)
+                                                        serviceScope.launch(Dispatchers.IO) {
+                                                            processDohPacket(packetData, outputStream, primaryDns)
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         } catch (_: Exception) {
-                            // Stream closed on shutdown
+                            // Stream or file descriptor closed on VPN shutdown
                         }
                     }
                 }

@@ -19,8 +19,8 @@ android {
     applicationId = "com.sfdnsapp.pro"
     minSdk = 24
     targetSdk = 36
-    versionCode = 24
-    versionName = "2.4"
+    versionCode = 25
+    versionName = "2.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -35,9 +35,9 @@ android {
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
+      storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
       keyAlias = "androiddebugkey"
-      keyPassword = "android"
+      keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
     }
   }
 

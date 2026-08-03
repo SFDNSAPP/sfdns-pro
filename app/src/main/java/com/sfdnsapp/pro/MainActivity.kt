@@ -82,6 +82,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private var isVpnStatusReceiverRegistered = false
+
     private val vpnStatusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val status = intent?.getStringExtra("status") ?: "disconnected"
@@ -131,12 +133,15 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Register receiver for VPN status changes
-        val filter = IntentFilter("$packageName.VPN_STATUS")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(vpnStatusReceiver, filter, RECEIVER_NOT_EXPORTED)
-        } else {
-            registerReceiver(vpnStatusReceiver, filter)
+        // Register receiver for VPN status changes with safety check
+        if (!isVpnStatusReceiverRegistered) {
+            val filter = IntentFilter("$packageName.VPN_STATUS")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(vpnStatusReceiver, filter, RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(vpnStatusReceiver, filter)
+            }
+            isVpnStatusReceiverRegistered = true
         }
     }
 
@@ -301,10 +306,24 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        try {
-            unregisterReceiver(vpnStatusReceiver)
-        } catch (e: Exception) {
-            // Ignore
+        if (isVpnStatusReceiverRegistered) {
+            try {
+                unregisterReceiver(vpnStatusReceiver)
+                isVpnStatusReceiverRegistered = false
+            } catch (e: Exception) {
+                // Receiver already unregistered
+            }
+        }
+        if (::webView.isInitialized) {
+            try {
+                webView.stopLoading()
+                webView.webChromeClient = null
+                webView.webViewClient = android.webkit.WebViewClient()
+                webView.removeAllViews()
+                webView.destroy()
+            } catch (e: Exception) {
+                // Ignore webview destruction error
+            }
         }
         mainJob.cancel()
         super.onDestroy()
@@ -490,7 +509,7 @@ class MainActivity : ComponentActivity() {
                         val packet = DatagramPacket(queryBytes, queryBytes.size, address, 53)
                         socket.send(packet)
 
-                        val responseBytes = ByteArray(512)
+                        val responseBytes = ByteArray(4096)
                         val responsePacket = DatagramPacket(responseBytes, responseBytes.size)
                         socket.receive(responsePacket)
 
@@ -547,9 +566,9 @@ class MainActivity : ComponentActivity() {
                     errorMsg = e.message ?: "Unknown resolution failure"
                 }
                 val elapsed = System.currentTimeMillis() - startTime
-                // Escape quotes
-                val safeIps = ipList.replace("\"", "\\\"")
-                val safeError = errorMsg.replace("\"", "\\\"")
+                // Escape backslashes and quotes
+                val safeIps = ipList.replace("\\", "\\\\").replace("\"", "\\\"")
+                val safeError = errorMsg.replace("\\", "\\\\").replace("\"", "\\\"")
                 val json = """{"success":$success,"elapsed":$elapsed,"ips":"$safeIps","error":"$safeError"}"""
                 scope.launch(Dispatchers.Main) {
                     webView.evaluateJavascript("if (window['$callbackId']) { window['$callbackId']($json); }", null)
@@ -559,7 +578,10 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun resolveDoH(domain: String, callbackId: String) {
-            if (!isValidCallbackId(callbackId)) return
+            if (!isValidCallbackId(callbackId)) {
+                android.util.Log.e("SecurityWarning", "Rejected invalid callbackId in resolveDoH: $callbackId")
+                return
+            }
             scope.launch(Dispatchers.IO) {
                 val startTime = System.currentTimeMillis()
                 var resolvedIps = ""
@@ -596,7 +618,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 val elapsed = System.currentTimeMillis() - startTime
-                val safeIps = resolvedIps.replace("\"", "\\\"")
+                val safeIps = resolvedIps.replace("\\", "\\\\").replace("\"", "\\\"")
                 val json = """{"success":$success,"elapsed":$elapsed,"data":"$safeIps"}"""
                 scope.launch(Dispatchers.Main) {
                     webView.evaluateJavascript("if (window['$callbackId']) { window['$callbackId']($json); }", null)
@@ -643,7 +665,7 @@ class MainActivity : ComponentActivity() {
                 try {
                     val intent = Intent(Intent.ACTION_SENDTO).apply {
                         data = Uri.parse("mailto:$cleanEmail")
-                        putExtra(Intent.EXTRA_SUBJECT, "SFDNS Pro Support v2.3")
+                        putExtra(Intent.EXTRA_SUBJECT, "SFDNS Pro Support v2.5")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     startActivity(intent)
@@ -652,7 +674,7 @@ class MainActivity : ComponentActivity() {
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "plain/text"
                             putExtra(Intent.EXTRA_EMAIL, arrayOf(cleanEmail))
-                            putExtra(Intent.EXTRA_SUBJECT, "SFDNS Pro Support v2.3")
+                            putExtra(Intent.EXTRA_SUBJECT, "SFDNS Pro Support v2.5")
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         }
                         startActivity(Intent.createChooser(intent, "Send Email").apply {
@@ -661,6 +683,25 @@ class MainActivity : ComponentActivity() {
                     } catch (ex: Exception) {
                         // Ignore
                     }
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun openGitHub(url: String) {
+            scope.launch(Dispatchers.Main) {
+                val cleanUrl = url.trim()
+                if (cleanUrl.startsWith("https://github.com/")) {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(cleanUrl)).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        // Ignore
+                    }
+                } else {
+                    android.util.Log.e("SecurityWarning", "Rejected non-github url in openGitHub: $url")
                 }
             }
         }
