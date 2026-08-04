@@ -71,6 +71,7 @@ Below are representative screenshots showing the main screens and settings. Clic
 | Custom DNS Input | <img width="240" alt="Custom DNS" src="https://github.com/user-attachments/assets/bac20289-0678-482e-9653-5d15260142e0" /> |
 | Main DNS Menu | <img width="240" alt="Main DNS Menu" src="https://github.com/user-attachments/assets/bbe9246c-e312-4831-a780-1794462f4ebe" /> |
 | Side Menu | <img width="240" alt="Side Menu" src="https://github.com/user-attachments/assets/c903e875-0eba-40fa-8902-a8235fa082e0" /> |
+| site <pic1> | <img width="240" height="2340" alt="site" src="https://github.com/user-attachments/assets/c6d3c3e5-5a3b-4d3b-82b4-66f5229ab642" />
 
 ---
 ## 🚀 Quick Start
