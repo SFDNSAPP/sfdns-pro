@@ -73,6 +73,12 @@ Below are representative screenshots showing the main screens and settings. Clic
 | Side Menu | <img width="240" alt="Side Menu" src="https://github.com/user-attachments/assets/c903e875-0eba-40fa-8902-a8235fa082e0" /> |
 | site <pic1> | <img width="1080" height="2340" alt="site" src="https://github.com/user-attachments/assets/c6d3c3e5-5a3b-4d3b-82b4-66f5229ab642" />
 
+| site2 <pic1> | <img width="1080" height="2340" alt="site 2" src="https://github.com/user-attachments/assets/f1dc0444-7673-4ba6-834b-7241d2ee524d" />
+
+| site3 <pic1> |<img width="1080" height="2340" alt="site 3" src="https://github.com/user-attachments/assets/73b4d482-085c-4b45-8566-0f6920d81c0a" />
+
+
+
 ---
 ## 🚀 Quick Start
 
