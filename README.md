@@ -72,12 +72,15 @@ Below are representative screenshots showing the main screens and settings. Clic
 | Main DNS Menu | <img width="240" alt="Main DNS Menu" src="https://github.com/user-attachments/assets/bbe9246c-e312-4831-a780-1794462f4ebe" /> |
 | Side Menu | <img width="240" alt="Side Menu" src="https://github.com/user-attachments/assets/c903e875-0eba-40fa-8902-a8235fa082e0" /> |
 
-| site | <img width="1080" height="2340" alt="site 1" src="https://github.com/user-attachments/assets/a8acf3e3-a578-48cc-9d3e-a3c8b0aec6e9" />
+| site | <img width="1080" height="2340" alt="1000027601" src="https://github.com/user-attachments/assets/cd91764b-39fa-4434-90ad-b1b6863a1b97" />
 
 
-| site <2>  | <img width="1080" height="2340" alt="site 2" src="https://github.com/user-attachments/assets/f1dc0444-7673-4ba6-834b-7241d2ee524d" />
 
-| site <3>  |<img width="1080" height="2340" alt="site 3" src="https://github.com/user-attachments/assets/73b4d482-085c-4b45-8566-0f6920d81c0a" />
+| site <2>  | <img width="1080" height="2340" alt="1000027603" src="https://github.com/user-attachments/assets/03bb82ec-3508-4bd9-9e69-4ccc8f721590" />
+
+
+| site <3>  | <img width="1080" height="2340" alt="1000027605" src="https://github.com/user-attachments/assets/f29e8083-2b44-41b8-b9c8-620f793ea07c" />
+
 
 
 
