@@ -67,21 +67,13 @@ Below are representative screenshots showing the main screens and settings. Clic
 | Screen | Preview |
 |---|---:|
 | Dashboard | <img width="240" alt="Dashboard" src="https://github.com/user-attachments/assets/4e748ac6-c996-4091-bb73-fa192b69224c" /> |
-| Advanced Settings | <img width="1080" height="2135" alt="1000027693" src="https://github.com/user-attachments/assets/322aaf1b-7a68-49c3-a3e0-e9c0ab8aee8f" />
-
+| Advanced Settings | <img width="240" alt="Advanced Settings" src="https://github.com/user-attachments/assets/322aaf1b-7a68-49c3-a3e0-e9c0ab8aee8f" /> |
 | Custom DNS Input | <img width="240" alt="Custom DNS" src="https://github.com/user-attachments/assets/bac20289-0678-482e-9653-5d15260142e0" /> |
 | Main DNS Menu | <img width="240" alt="Main DNS Menu" src="https://github.com/user-attachments/assets/bbe9246c-e312-4831-a780-1794462f4ebe" /> |
-| Side Menu | <img width="1080" height="2172" alt="1000027691" src="https://github.com/user-attachments/assets/9b21d041-aeb5-4239-ac25-12c1b126448a" />
-
-
-| site | <img width="1080" height="2340" alt="1000027601" src="https://github.com/user-attachments/assets/cd91764b-39fa-4434-90ad-b1b6863a1b97" />
-
-
-
-| site <2>  | <img width="1080" height="2340" alt="1000027603" src="https://github.com/user-attachments/assets/03bb82ec-3508-4bd9-9e69-4ccc8f721590" />
-
-
-| site <3>  | <img width="1080" height="2340" alt="1000027605" src="https://github.com/user-attachments/assets/f29e8083-2b44-41b8-b9c8-620f793ea07c" />
+| Side Menu | <img width="240" alt="Side Menu" src="https://github.com/user-attachments/assets/9b21d041-aeb5-4239-ac25-12c1b126448a" /> |
+| site | <img width="1080" height="2340" alt="site" src="https://github.com/user-attachments/assets/cd91764b-39fa-4434-90ad-b1b6863a1b97" /> |
+| site <2>  | <img width="1080" height="2340" alt="site2" src="https://github.com/user-attachments/assets/03bb82ec-3508-4bd9-9e69-4ccc8f721590" /> |
+| site <3>  | <img width="1080" height="2340" alt="site3" src="https://github.com/user-attachments/assets/f29e8083-2b44-41b8-b9c8-620f793ea07c" />
 
 
 
