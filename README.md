@@ -1,12 +1,12 @@
-# DNS Changer & DoH Proxy for Android
+# SFDNS PRO - DNS Changer & DoH Proxy for Android (v2.6)
 
 [English](README.md) • [فارسی](README.fa.md) • [العربية](README.ar.md) • [Русский](README.ru.md)
 
-[![Android](https://img.shields.io/badge/Platform-Android-green.svg?logo=android)](https://www.android.com)  [![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg?logo=kotlin)](https://kotlinlang.org)  [![MinSDK](https://img.shields.io/badge/Min%20SDK-24%2B-blue.svg)](https://developer.android.com/about/versions/nougat)  [![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)  [![UI](https://img.shields.io/badge/UI-Glassmorphic%20%2F%20WebView%20M3-darkgreen.svg)]()
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg?logo=android)](https://www.android.com)  [![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg?logo=kotlin)](https://kotlinlang.org)  [![MinSDK](https://img.shields.io/badge/Min%20SDK-24%2B-blue.svg)](https://developer.android.com/about/versions/nougat)  [![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)  [![UI](https://img.shields.io/badge/UI-Cyber%20%2F%20Native%20M3-darkgreen.svg)]()
 
 [![Latest Release](https://img.shields.io/github/v/release/SFDNSAPP/sfdns-pro?label=Latest%20Release&color=blue)](https://github.com/SFDNSAPP/sfdns-pro/releases/latest)  [![GitHub stars](https://img.shields.io/github/stars/SFDNSAPP/sfdns-pro?style=social)](https://github.com/SFDNSAPP/sfdns-pro/stargazers)  [![Open issues](https://img.shields.io/github/issues/SFDNSAPP/sfdns-pro?color=orange)](https://github.com/SFDNSAPP/sfdns-pro/issues)
 
-An advanced, lightweight, privacy-focused Android application for changing DNS servers and tunneling DNS queries securely via **DNS-over-HTTPS (DoH)**. Built natively with Kotlin and `VpnService` to capture DNS traffic and forward it to chosen resolvers.
+An advanced, lightweight, privacy-focused Android application for changing DNS servers and tunneling DNS queries securely via **DNS-over-HTTPS (DoH)**. Built natively with Kotlin and Android `VpnService` to capture DNS traffic and forward it to chosen resolvers with zero battery drain.
 
 ---
 ## 📑 Table of Contents
@@ -25,7 +25,7 @@ An advanced, lightweight, privacy-focused Android application for changing DNS s
 - [Support & Contact](#-support--contact)
 - [License](#-license)
 
-our website: https://sfdns.dpdns.org 🌐
+**Official Website**: [https://sfdns.dpdns.org](https://sfdns.dpdns.org) 🌐
 
 ---
 
@@ -42,27 +42,30 @@ our website: https://sfdns.dpdns.org 🌐
   - **Radar Game** (`10.201.201.201`)
   - **403 Online** (`10.202.10.202`)
   - **Begzar** (`185.55.226.26`)
-  - **Custom Primary & Secondary DNS** input support
-- 🧩 **Home Screen Widgets & Quick Tile**: Toggle DNS connection from the Quick Settings tile or from app widgets.
-- 🎨 **Modern Glassmorphic UI**: Smooth animations, dark mode, ping test indicators, and real-time DNS status feedback.
+  - **Custom Primary & Secondary DNS** input support (IPv4 & IPv6)
+- 🧩 **Home Screen Widgets & Quick Tile**: Toggle DNS connection from the Quick Settings tile or from interactive app widgets.
+- 🎨 **Modern Cyber Aesthetic UI**: Smooth animations, dark mode, ping test indicators, and real-time DNS status feedback.
 - 🔄 **Auto-Connect on Boot**: Optional background startup after device reboot.
+- 🎮 **Gaming Radar Benchmark**: Real UDP/TCP socket-based ping measuring lowest latency for online games.
+- 🛡️ **Split Tunneling (App Bypass)**: Selectively bypass banking or domestic apps from DNS routing.
 
 ---
 ## 📥 Download
 
 Get the latest signed APK from the [Releases](https://github.com/SFDNSAPP/sfdns-pro/releases) page — no need to build from source.
-or download from our website: https://sfdns.dpdns.org 🌐
+Or download directly from our official website: [https://sfdns.dpdns.org](https://sfdns.dpdns.org) 🌐
+
 ---
 ## 🏗️ Architecture & How It Works
 
-1. **Android VpnService Loop**: The app establishes a local virtual TUN interface (`VpnService`). Instead of routing all traffic, it selectively intercepts DNS destinations.
+1. **Android VpnService Loop**: The app establishes a local virtual TUN interface (`VpnService`). Instead of routing all traffic, it selectively intercepts DNS destinations on port 53.
 2. **DNS Packet Draining & DoH Processing**: When DoH is enabled, captured DNS queries are converted into RFC 8484-compliant HTTPS requests sent over TLS to the selected resolver (e.g. `https://1.1.1.1/dns-query`).
 3. **Zero Logs & Minimal Footprint**: The app avoids persistent logging and does not transmit telemetry to third parties.
 
 ---
 ## 📱 Screenshots
 
-Below are representative screenshots showing the main screens and settings. Click images to view full-size (hosted via repository attachments).
+Below are representative screenshots showing the main screens and settings. Click images to view full-size.
 
 | Screen | Preview |
 |---|---:|
@@ -71,71 +74,76 @@ Below are representative screenshots showing the main screens and settings. Clic
 | Custom DNS Input | <img width="240" alt="Custom DNS" src="https://github.com/user-attachments/assets/bac20289-0678-482e-9653-5d15260142e0" /> |
 | Main DNS Menu | <img width="240" alt="Main DNS Menu" src="https://github.com/user-attachments/assets/bbe9246c-e312-4831-a780-1794462f4ebe" /> |
 | Side Menu | <img width="240" alt="Side Menu" src="https://github.com/user-attachments/assets/9b21d041-aeb5-4239-ac25-12c1b126448a" /> |
-| site | <img width="1080" height="2340" alt="site" src="https://github.com/user-attachments/assets/cd91764b-39fa-4434-90ad-b1b6863a1b97" /> |
-| site <2>  | <img width="1080" height="2340" alt="site2" src="https://github.com/user-attachments/assets/03bb82ec-3508-4bd9-9e69-4ccc8f721590" /> |
-| site <3>  | <img width="1080" height="2340" alt="site3" src="https://github.com/user-attachments/assets/f29e8083-2b44-41b8-b9c8-620f793ea07c" />
-
-
-
+| Website View 1 | <img width="1080" height="2340" alt="site" src="https://github.com/user-attachments/assets/cd91764b-39fa-4434-90ad-b1b6863a1b97" /> |
+| Website View 2 | <img width="1080" height="2340" alt="site2" src="https://github.com/user-attachments/assets/03bb82ec-3508-4bd9-9e69-4ccc8f721590" /> |
+| Website View 3 | <img width="1080" height="2340" alt="site3" src="https://github.com/user-attachments/assets/f29e8083-2b44-41b8-b9c8-620f793ea07c" /> |
 
 ---
 ## 🚀 Quick Start
 
-1. Install the APK from the [Releases page](https://github.com/SFDNSAPP/sfdns-pro/releases).
+1. Install the APK from the [Releases page](https://github.com/SFDNSAPP/sfdns-pro/releases) or website.
 2. Open the app and grant the VPN permission when prompted.
 3. Choose a resolver from the list or enter custom Primary/Secondary DNS addresses.
 4. Enable DoH in settings if you want encrypted DNS (recommended).
 5. Use the Quick Settings tile or widget for one-tap connect/disconnect.
-more information in our website: https://sfdns.dpdns.org 🌐
-Notes:
-- The app only intercepts DNS queries; normal traffic is not proxied.
-- On modern Android versions, the OS may prompt for a persistent VPN notification — this is required for operation.
+
+More information at our website: [https://sfdns.dpdns.org](https://sfdns.dpdns.org) 🌐
+
+---
+## 🛠️ Building & Installation
+
+### Requirements
+- Android Studio Ladybug or newer
+- JDK 17 / 21
+- Android SDK 34 / 36 (Min SDK 24)
+
+### Build Commands
+```bash
+# Clone the repository
+git clone https://github.com/SFDNSAPP/sfdns-pro.git
+cd sfdns-pro
+
+# Run unit tests
+gradle testDebugUnitTest
+
+# Assemble Release APK
+gradle assembleRelease
+```
 
 ---
 ## 🔒 Security & Privacy
 
 - `allowBackup` set to `false` to avoid sensitive app state extraction.
 - Cleartext HTTP traffic disabled (`usesCleartextTraffic="false"`).
-- Zero user data collection or telemetry analytics by default.
+- Zero user data collection or telemetry analytics.
 
 ---
 ## 🗺️ Roadmap
 
-This roadmap is organized into three clear categories so you can see what is completed, in progress, and planned.
-
 ### Done ✅
-- [x] Core DoH proxy implementation and local VPN-based DNS interception (core functionality implemented and available in releases).
-- [x] Pre-configured list of popular resolvers (Cloudflare, Google, Quad9, Shecan, etc.) — curated in-app server list.
+- [x] Core DoH proxy implementation and local VPN-based DNS interception
+- [x] Pre-configured list of popular resolvers (Cloudflare, Google, Quad9, Shecan, Electro, Radar, etc.)
+- [x] Quick Settings Tile & Home Screen Widgets
+- [x] Multilingual Documentation (English, Persian, Arabic, Russian)
 
 ### In Progress 🚧
-- [ ] Turkish and French language support (localization in progress)
+- [ ] Turkish and French language in-app localization
 
 ### Future Plans 📋
-- [ ] Network-aware optimization — detect active network (Wi-Fi / mobile) and apply per-network profiles
-- [ ] Split-tunneling support (per-app DNS/VPN routing)
-- [ ] Ping / latency history graph and improved diagnostics
+- [ ] Network-aware optimization — automatic profile per Wi-Fi / Cellular
 - [ ] Export / import custom DNS profiles (backup & restore)
-
-Have an idea or want to help? Open an [issue](https://github.com/SFDNSAPP/sfdns-pro/issues) and tag it with `enhancement` or submit a PR.
 
 ---
 ## ❓ FAQ
 
-Q: Does this app route all my traffic through a VPN?
-
+**Q: Does this app route all my traffic through a VPN?**  
 A: No. The app only intercepts DNS queries (port 53) and forwards them to the configured resolver. Other traffic uses the device's normal network path.
 
-Q: Is my DNS traffic logged or shared?
+**Q: Is my DNS traffic logged or shared?**  
+A: No. The app aims for minimal footprint and does not persistently log DNS queries or send telemetry to third parties.
 
-A: No. The app aims for minimal footprint and does not persistently log DNS queries or send telemetry to third parties. See the Security & Privacy section for details.
-
-Q: Will this work on rooted devices or older Android versions?
-
-A: The app uses Android's VpnService and works on devices with API level 24+. Root is not required. Some manufacturer-specific ROMs may alter VPN behavior.
-
-Q: How can I contribute translations or patches?
-
-A: Please open an Issue or submit a Pull Request. Follow the contributing steps in this README and include details about the change.
+**Q: Will this work on rooted devices or older Android versions?**  
+A: The app uses Android's standard `VpnService` and works on devices with Android 7.0+ (API level 24+). Root is NOT required.
 
 ---
 ## 🤝 Contributing
@@ -148,14 +156,10 @@ Contributions are welcome!
 4. Push to the branch (`git push origin feature/your-feature`)
 5. Open a Pull Request
 
-Please keep code style consistent with existing Kotlin conventions and include tests where appropriate.
-
 ---
 ## ⚖️ Disclaimer
 
-This application only changes DNS resolution and does not route or inspect general internet traffic. It is provided for privacy, security, and connectivity purposes.
-
-Users are responsible for complying with the laws and regulations of their country regarding internet usage and DNS/VPN tools. The developers assume no liability for misuse of this application.
+This application only changes DNS resolution and does not route or inspect general internet traffic. It is provided for privacy, security, and connectivity purposes. Users are responsible for complying with the laws and regulations of their country.
 
 ---
 ## 💬 Support & Contact
@@ -164,7 +168,8 @@ Users are responsible for complying with the laws and regulations of their count
 - 💡 Feature requests? Use the `enhancement` label on Issues
 - 📧 Email: [sfdnsapp@gmail.com](mailto:sfdnsapp@gmail.com)
 - 📢 Telegram Channel: [@sfdnsapp](https://t.me/sfdnsapp)
-our website: https://sfdns.dpdns.org 🌐
+- 🌐 Official Website: [https://sfdns.dpdns.org](https://sfdns.dpdns.org)
+
 If you find this project useful, please consider starring the repo ⭐
 
 ---

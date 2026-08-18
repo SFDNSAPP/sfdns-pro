@@ -1,0 +1,6 @@
+# GitHub Linguist Overrides
+# Ensure GitHub recognizes Kotlin as the primary language of the repository
+app/src/main/assets/** linguist-vendored
+*.html linguist-vendored
+*.css linguist-vendored
+*.js linguist-vendored

@@ -1864,10 +1864,32 @@
     </div>
   </div>
   <div class="modal-body" style="padding: 16px 20px 24px;">
-    <!-- Version 2.5 -->
+    <!-- Version 2.6 -->
     <div style="background: rgba(6, 182, 212, 0.1); border: 1.5px solid rgba(6, 182, 212, 0.5); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.15);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(6, 182, 212, 0.25); padding-bottom: 6px;">
-        <span style="font-family: var(--orbitron); font-size: 15px; font-weight: 900; color: var(--neon-cyan); text-shadow: 0 0 8px rgba(6, 182, 212, 0.5);">v2.5 (جدیدترین آپدیت)</span>
+        <span style="font-family: var(--orbitron); font-size: 15px; font-weight: 900; color: var(--neon-cyan); text-shadow: 0 0 8px rgba(6, 182, 212, 0.5);">v2.6 (جدیدترین آپدیت - آماده گیت‌هاب)</span>
+        <span style="font-family: var(--mono); font-size: 10px; color: var(--text-dim);" data-fa="۱۸ اوت ۲۰۲۶" data-en="August 18, 2026">۱۸ اوت ۲۰۲۶</span>
+      </div>
+      <ul style="margin: 0; padding-right: 18px; padding-left: 18px; color: var(--text); font-size: 12.5px; line-height: 1.8; text-align: justify; font-family: var(--vazir);">
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--neon-cyan);" data-fa="🌐 مستندات چندزبانه گیت‌هاب:" data-en="🌐 Multi-language Documentation:">🌐 مستندات چندزبانه گیت‌هاب:</strong>
+          <span data-fa="اضافه شدن مستندات کامل به زبان‌های انگلیسی، فارسی، عربی و روسی با جزئیات فنی و راهنمای نصب." data-en="Added complete multilingual documentation in English, Persian, Arabic, and Russian with build instructions.">اضافه شدن مستندات کامل به زبان‌های انگلیسی، فارسی، عربی و روسی با جزئیات فنی و راهنمای نصب.</span>
+        </li>
+        <li style="margin-bottom: 8px;">
+          <strong style="color: var(--neon-green);" data-fa="⚡ بهینه‌سازی موتور پینگ و تونلینگ:" data-en="⚡ Ping Engine & Tunneling:">⚡ بهینه‌سازی موتور پینگ و تونلینگ:</strong>
+          <span data-fa="بهبود سیستم تست پینگ بلادرنگ سرورها و پایداری بالاتر سرویس محلی VPN بدون مصرف باتری." data-en="Enhanced real-time ping benchmark and maximized local VPN tunnel stability with zero battery drain.">بهبود سیستم تست پینگ بلادرنگ سرورها و پایداری بالاتر سرویس محلی VPN بدون مصرف باتری.</span>
+        </li>
+        <li style="margin-bottom: 4px;">
+          <strong style="color: #FFE066;" data-fa="🎯 تفکیک برنامه‌ها و رفع تحریم بازی‌ها:" data-en="🎯 Split Tunneling & Game Fixes:">🎯 تفکیک برنامه‌ها و رفع تحریم بازی‌ها:</strong>
+          <span data-fa="عملکرد بی‌نقص برای بازی‌های تحریم‌شده و قابلیت تفکیک برنامه‌های بانکی و بومی از تونل دی‌ان‌اس." data-en="Flawless performance for anti-sanction gaming and smooth split-tunneling for domestic apps.">عملکرد بی‌نقص برای بازی‌های تحریم‌شده و قابلیت تفکیک برنامه‌های بانکی و بومی از تونل دی‌ان‌اس.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Version 2.5 -->
+    <div style="background: rgba(255, 224, 102, 0.03); border: 1.5px solid rgba(255, 224, 102, 0.2); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 224, 102, 0.02);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255, 224, 102, 0.1); padding-bottom: 6px;">
+        <span style="font-family: var(--orbitron); font-size: 14px; font-weight: 700; color: #FFE066;">v2.5</span>
         <span style="font-family: var(--mono); font-size: 10px; color: var(--text-dim);" data-fa="۳ اوت ۲۰۲۶" data-en="August 3, 2026">۳ اوت ۲۰۲۶</span>
       </div>
       <ul style="margin: 0; padding-right: 18px; padding-left: 18px; color: var(--text); font-size: 12.5px; line-height: 1.8; text-align: justify; font-family: var(--vazir);">
@@ -2899,9 +2921,9 @@ function init() {
       console.error("Failed to apply premium status", e);
     }
 
-    // Check if the v2.5 changelog has been read
+    // Check if the v2.6 changelog has been read
     try {
-      if (localStorage.getItem('sfdns_changelog_read_v2_5') === 'true') {
+      if (localStorage.getItem('sfdns_changelog_read_v2_6') === 'true') {
         const badge = document.getElementById('bellBadge');
         if (badge) badge.style.display = 'none';
       }
@@ -3684,7 +3706,7 @@ function openChangelogModal(e) {
     badge.style.display = 'none';
   }
   try {
-    localStorage.setItem('sfdns_changelog_read_v2_5', 'true');
+    localStorage.setItem('sfdns_changelog_read_v2_6', 'true');
   } catch (ex) {}
   setTimeout(() => {
     document.getElementById('changelogModalOverlay')?.classList.add('open');
@@ -5066,7 +5088,7 @@ function requestBatteryExemption() {
 
 function exportSettingsProfile() {
   const profile = {
-    version: "2.5",
+    version: "2.6",
     settings: settings,
     selectedDNS: selectedDNS,
     carrier: localStorage.getItem('sfdns_setting_carrier_opt') || 'auto',
