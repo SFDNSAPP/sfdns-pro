@@ -76,7 +76,7 @@
   .connect-ring:nth-child(2){inset:16px;border-color:rgba(255,255,255,0.02);}
   .connect-ring:nth-child(3){inset:32px;border-color:rgba(255,255,255,0.01);}
   
-  .connect-btn{width:145px;height:145px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:transform 0.2s cubic-bezier(0.16,1,0.3,1), border-color 0.2s, background-color 0.2s, box-shadow 0.2s;box-shadow:0 12px 40px rgba(0,0,0,0.4);position:relative;z-index:1;will-change:transform;}
+  .connect-btn{width:145px;height:145px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid var(--glass-border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:transform 0.2s cubic-bezier(0.16,1,0.3,1), border-color 0.2s, background-color 0.2s, box-shadow 0.2s;box-shadow:0 12px 40px rgba(0,0,0,0.4);position:relative;z-index:1;}
   .connect-btn::after { content:''; position:absolute; inset:0; border-radius:50%; border:1px solid transparent; transition:border-color 0.2s; }
   .connect-btn:hover{transform:scale(1.04);border-color:rgba(255,255,255,0.25);}
   .connect-btn:active{transform:scale(0.96);}
@@ -90,7 +90,7 @@
   
   @keyframes pulseOuter { 0% { transform:scale(1); opacity:1; } 100% { transform:scale(1.2); opacity:0; } }
 
-  .connect-icon{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;transition:background-color 0.2s, box-shadow 0.2s, transform 0.2s;will-change:transform;}
+  .connect-icon{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;transition:background-color 0.2s, box-shadow 0.2s, transform 0.2s;}
   .connect-btn.connected .connect-icon{background:var(--neon-green);box-shadow:0 0 20px var(--neon-green-dim);}
   .connect-icon svg{width:22px;height:22px;fill:var(--text);transition:fill 0.2s;}
   .connect-btn.connected .connect-icon svg{fill:var(--bg);}
@@ -117,7 +117,7 @@
   /* Menu Overlay & Drawer */
   .menu-overlay{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,0.8);opacity:0;pointer-events:none;transition:opacity 0.3s;}
   .menu-overlay.open{opacity:1;pointer-events:auto;}
-  .side-menu{position:fixed;top:0;left:0;bottom:0;width:290px;z-index:100;background:var(--bg-elevated);border-right:1px solid var(--glass-border);transform:translate3d(-100%,0,0);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;box-shadow:10px 0 40px rgba(0,0,0,0.5);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+  .side-menu{position:fixed;top:0;left:0;bottom:0;width:290px;z-index:100;background:var(--bg-elevated);border-right:1px solid var(--glass-border);transform:translate3d(-100%,0,0);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;box-shadow:10px 0 40px rgba(0,0,0,0.5);backface-visibility:hidden;-webkit-backface-visibility:hidden;}
   .side-menu.open{transform:translate3d(0,0,0);}
   
   .menu-header{padding:28px 24px 16px;border-bottom:1px solid var(--glass-border);}
@@ -125,13 +125,37 @@
   .menu-header p{font-size:11px;color:var(--text-dim);margin-top:2px;}
   
   .menu-body{flex:1;overflow-y:auto;padding:12px 0;}
-  .menu-item{display:flex;align-items:center;gap:14px;padding:14px 24px;cursor:pointer;transition:all 0.2s;}
-  .menu-item:hover{background:var(--glass-hover);}
-  .menu-item svg{width:20px;height:20px;fill:var(--text-dim);transition:all 0.2s;}
-  .menu-item:hover svg{fill:var(--text);}
+  .menu-item{display:flex;align-items:center;gap:14px;padding:12px 20px;margin:0 12px 6px;border-radius:14px;cursor:pointer;transition:all 0.25s cubic-bezier(0.16,1,0.3,1);border:1px solid transparent;}
+  .menu-item:hover{background:var(--glass-hover);border-color:var(--glass-border);transform:translateX(-3px);}
+  html[dir="ltr"] .menu-item:hover{transform:translateX(3px);}
   .menu-item span{font-size:14px;font-weight:700;color:var(--text);}
   .menu-item .menu-desc{font-size:10px;color:var(--text-dim);margin-top:2px;}
-  .menu-divider{height:1px;background:var(--glass-border);margin:12px 24px;}
+  .menu-divider{height:1px;background:var(--glass-border);margin:10px 20px;}
+
+  /* Menu Icon Badges */
+  .menu-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .menu-item:hover .menu-icon-box {
+    transform: scale(1.1) rotate(4deg);
+  }
+  .menu-icon-box svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+  .icon-box-cyan { background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--neon-cyan); box-shadow: 0 4px 14px rgba(6, 182, 212, 0.15); }
+  .icon-box-emerald { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15); }
+  .icon-box-violet { background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.3); color: #a78bfa; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.15); }
+  .icon-box-amber { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15); }
+  .icon-box-red { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15); }
 
   /* Footer developer support links */
   .menu-dev-box{padding:16px 24px;border-top:1px solid var(--glass-border);background:rgba(0,0,0,0.15);}
@@ -148,7 +172,7 @@
   /* Dialogs / Modals */
   .modal-overlay{position:fixed;inset:0;z-index:110;background:rgba(3,7,18,0.85);opacity:0;pointer-events:none;transition:opacity 0.3s;}
   .modal-overlay.open{opacity:1;pointer-events:auto;}
-  .modal{position:fixed;bottom:0;left:0;right:0;z-index:111;background:var(--panel);border-top:1px solid var(--glass-border);border-radius:24px 24px 0 0;max-height:75vh;overflow-y:auto;transform:translate3d(0,100%,0);transition:transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -10px 40px rgba(0,0,0,0.5);will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+  .modal{position:fixed;bottom:0;left:0;right:0;z-index:111;background:var(--panel);border-top:1px solid var(--glass-border);border-radius:24px 24px 0 0;max-height:75vh;overflow-y:auto;transform:translate3d(0,100%,0);transition:transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -10px 40px rgba(0,0,0,0.5);backface-visibility:hidden;-webkit-backface-visibility:hidden;}
   .modal.open{transform:translate3d(0,0,0);}
   
   .modal-header{padding:20px 24px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:2;border-bottom:1px solid var(--glass-border);}
@@ -953,6 +977,185 @@
     100% { transform: rotate(360deg); }
   }
 
+  /* ============================================================
+     NEW FEATURES STYLES: DNS SHARE & QR HUB, RADAR ARENA, GAME HUB
+     ============================================================ */
+  .share-tabs-nav {
+    display: flex;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 4px;
+    margin-bottom: 14px;
+    border: 1px solid var(--glass-border);
+  }
+  .share-tab-btn {
+    flex: 1;
+    padding: 8px 6px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: var(--vazir);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  .share-tab-btn.active {
+    background: rgba(6, 182, 212, 0.2);
+    color: var(--neon-cyan);
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+  }
+  .vip-card-container {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(6, 182, 212, 0.2);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    margin-bottom: 14px;
+    background: #0b0f17;
+  }
+  .vip-card-canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 14px;
+  }
+  .qr-code-display-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.02);
+    border: 1.5px dashed rgba(6, 182, 212, 0.35);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .qr-canvas-element {
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+  }
+
+  /* Radar Arena Styles */
+  .radar-hud-wrap {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .radar-canvas-element {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(6,182,212,0.02) 70%, transparent 100%);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+  }
+  .radar-leaderboard-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+  }
+  .radar-leaderboard-card.rank-1 {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(255,255,255,0.02));
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+  }
+  .radar-leaderboard-card.rank-2 {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.12), rgba(255,255,255,0.02));
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+  .radar-leaderboard-card.rank-3 {
+    background: linear-gradient(135deg, rgba(180, 83, 9, 0.12), rgba(255,255,255,0.02));
+    border-color: rgba(180, 83, 9, 0.3);
+  }
+
+  /* Game Hub Styles */
+  .game-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .game-hub-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .game-hub-card:hover {
+    border-color: var(--neon-cyan);
+    background: rgba(255,255,255,0.05);
+  }
+  .game-hub-card.installed {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(255,255,255,0.02));
+  }
+  .game-installed-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--neon-green);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  html[dir="rtl"] .game-installed-badge {
+    left: 6px;
+    right: auto;
+  }
+  html[dir="ltr"] .game-installed-badge {
+    right: 6px;
+    left: auto;
+  }
+
+  /* Floating Clipboard Banner */
+  .clipboard-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 16px;
+    right: 16px;
+    z-index: 999;
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    border: 1.5px solid var(--neon-cyan);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.8), 0 0 20px rgba(6, 182, 212, 0.3);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    animation: slideUpBanner 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideUpBanner {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
 </style>
 </head>
 <body>
@@ -1095,9 +1298,36 @@
       <div id="bankBypassHomeCard" onclick="handleBankBypassClick(event)" class="diagnostic-btn-card" style="margin-top: 10px; padding: 12px 14px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 18px;">🏦</span>
-          <span style="font-weight: 700; font-size: 13px;" data-fa="بای‌پاس هوشمند بانک‌ها و همراه" data-en="Bank & Persian Apps Bypass">بای‌پاس هوشمند بانک‌ها و همراه</span>
+          <span style="font-weight: 700; font-size: 13px;" data-fa="عبور هوشمند برنامه‌های ایرانی/بانکی" data-en="Persian & Bank Apps Bypass">عبور هوشمند برنامه‌های ایرانی/بانکی</span>
         </div>
         <span id="badgeBankBypass" style="font-size: 11px; font-weight: bold; font-family: var(--vazir);" class="prem-feature-badge">🔒 قفل (پرمیوم)</span>
+      </div>
+
+      <!-- Feature 4: Live DNS Radar Arena -->
+      <div onclick="openRadarModal()" class="diagnostic-btn-card" style="margin-top: 10px; padding: 12px 14px; background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(6,182,212,0.05)); border: 1.5px solid rgba(16,185,129,0.35);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">📊</span>
+          <span style="font-weight: 700; font-size: 13px;" data-fa="رادار مسابقه دی‌ان‌اس (Radar Arena)" data-en="DNS Radar Arena & Benchmark">رادار مسابقه دی‌ان‌اس (Radar Arena)</span>
+        </div>
+        <span style="font-size: 10px; font-weight: bold; color: var(--neon-green); background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 8px;" data-fa="👑 تست همزمان ۳۰ سرور" data-en="👑 Live 30+ Arena">👑 تست همزمان ۳۰ سرور</span>
+      </div>
+
+      <!-- Feature 3: Game Launcher & Boost Hub -->
+      <div onclick="openGameHubModal()" class="diagnostic-btn-card" style="margin-top: 10px; padding: 12px 14px; background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(236,72,153,0.05)); border: 1.5px solid rgba(139,92,246,0.35);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">🚀</span>
+          <span style="font-weight: 700; font-size: 13px;" data-fa="لانچر هوشمند و بوست بازی‌ها (Game Hub)" data-en="Smart Game Hub & Launcher">لانچر هوشمند و بوست بازی‌ها (Game Hub)</span>
+        </div>
+        <span style="font-size: 10px; font-weight: bold; color: #c084fc; background: rgba(139,92,246,0.15); padding: 4px 8px; border-radius: 8px;" data-fa="⚡ اجرای مستقیم" data-en="⚡ Auto Launch">⚡ اجرای مستقیم</span>
+      </div>
+
+      <!-- Feature 5: Super Advanced DNS Share & QR Hub (TOP PRIORITY) -->
+      <div onclick="openShareModal()" class="diagnostic-btn-card" style="margin-top: 10px; padding: 12px 14px; background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(59,130,246,0.05)); border: 1.5px solid rgba(6,182,212,0.4); box-shadow: 0 0 15px rgba(6,182,212,0.15);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">🔗</span>
+          <span style="font-weight: 700; font-size: 13px;" data-fa="اشتراک‌گذاری، کارت VIP و کد QR" data-en="DNS Share, VIP Card & QR">اشتراک‌گذاری، کارت VIP و کد QR</span>
+        </div>
+        <span style="font-size: 10px; font-weight: bold; color: var(--neon-cyan); background: rgba(6,182,212,0.15); padding: 4px 8px; border-radius: 8px;" data-fa="🔥 جدید و اختصاصی" data-en="🔥 VIP Exclusive">🔥 جدید و اختصاصی</span>
       </div>
 
       <!-- Free Utility: Test List Launcher -->
@@ -1106,77 +1336,116 @@
           <span style="font-size: 18px;">🔍</span>
           <span style="font-weight: 700; font-size: 13px;" data-fa="تست لیست دور زدن تحریم‌ها" data-en="Bypass Test List">تست لیست دور زدن تحریم‌ها</span>
         </div>
-        <span style="font-size: 11px; color: var(--neon-green); font-family: var(--orbitron); font-weight: bold;" data-fa="[تست لیست]" data-en="[TEST LIST]">[تست لیست]</span>
-      </div>
-    </div>
-  </main>
-</div>
-
-<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
-<div class="side-menu" id="sideMenu">
-  <div class="menu-header">
-    <h2>SFDNS Pro</h2>
-    <p data-fa="تنظیمات برنامه" data-en="App Settings">تنظیمات برنامه</p>
-  </div>
-  <div class="menu-body">
-    <div class="menu-item" onclick="openLangModal()">
-      <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
-      <div>
-        <span data-fa="تغییر زبان" data-en="Change Language">تغییر زبان</span>
-        <div class="menu-desc" id="langDesc">فارسی / English</div>
-      </div>
-    </div>
-    <div class="menu-item" onclick="openSettingsView()">
-      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-      <div>
-        <span data-fa="تنظیمات پیشرفته" data-en="Advanced Settings">تنظیمات پیشرفته</span>
-        <div class="menu-desc" data-fa="کیل سوئیچ، DoH، IPv6" data-en="Kill Switch, DoH, IPv6">کیل سوئیچ، DoH، IPv6</div>
-      </div>
-    </div>
-    <div class="menu-item" onclick="openThemeSelectorModal()">
-      <svg viewBox="0 0 24 24"><path d="M12.34 2.02c-.5-.03-1 .28-1.15.76-.15.48.06 1 .52 1.25C15.68 6.01 18 10 18 14.5c0 6.08-4.92 11-11 11-4.5 0-8.5-2.32-10.47-6.29-.25-.46-.77-.67-1.25-.52-.48.15-.79.65-.76 1.15C2.68 19.34 7 22 12 22c5.52 0 10-4.48 10-10 0-5-2.66-9.32-6.66-11.66-.3-.17-.66-.3-.98-.32z"/></svg>
-      <div>
-        <span data-fa="تم برنامه" data-en="App Theme">تم برنامه</span>
-        <div class="menu-desc" id="themeDesc" data-fa="تاریک سایبر / روشن صدفی" data-en="Cyber Dark / Pearl Light">تاریک سایبر / روشن صدفی</div>
-      </div>
-    </div>
-    <div class="menu-divider"></div>
-    <div class="menu-item" onclick="openAboutModal()">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-      <div>
-        <span data-fa="درباره" data-en="About">درباره</span>
-        <div class="menu-desc" data-fa="SFDNS Cyber Edition v2.5" data-en="SFDNS Cyber Edition v2.5">SFDNS Cyber Edition v2.5</div>
+        <span style="color: var(--neon-cyan); font-weight: bold; font-size: 13px;">➔</span>
       </div>
     </div>
   </div>
 
-  <div class="menu-dev-box">
-    <div class="menu-dev-title" data-fa="پشتیبانی برنامه" data-en="App Support">پشتیبانی برنامه</div>
-    <div class="menu-dev-links" style="display: flex; gap: 6px; flex-wrap: wrap;">
-      <div class="menu-link-btn" onclick="openSupportTg()" style="flex: 1; min-width: 80px;">
-        <svg viewBox="0 0 24 24" style="fill: currentColor;"><circle cx="12" cy="10" r="3.5" /><path d="M12 15c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z" /><path d="M6 10a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /><rect x="5.5" y="9" width="1.5" height="3.5" rx="0.75" /><rect x="17" y="9" width="1.5" height="3.5" rx="0.75" /><path d="M17 11a2.5 2.5 0 0 1-2.5 2.5H13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
-        <span data-fa="پشتیبانی" data-en="Support">پشتیبانی</span>
+  <!-- Drawer Menu Overlay & Side Menu -->
+  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-header">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="menu-title">SFDNS Pro</div>
+        <div onclick="closeMenu()" style="cursor: pointer; padding: 4px; color: var(--text-dim);">
+          <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </div>
       </div>
-      <div class="menu-link-btn" onclick="openChannelTg()" style="flex: 1; min-width: 80px;">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.49 8.24l-1.89 8.9c-.14.63-.51.78-1.04.49l-2.88-2.12-1.39 1.34c-.15.15-.28.28-.58.28l.2-2.92 5.32-4.8c.23-.21-.05-.32-.36-.12L10.02 14.8l-2.83-.88c-.61-.19-.62-.61.13-.91l11.07-4.27c.51-.19.96.11.8.76z"/></svg>
-        <span data-fa="کانال" data-en="Channel">کانال</span>
+      <p data-fa="تنظیمات و ابزارهای شبکه" data-en="Network Settings & Tools">تنظیمات و ابزارهای شبکه</p>
+    </div>
+    <div class="menu-body">
+      <div class="menu-item" onclick="openLangModal()">
+        <div class="menu-icon-box icon-box-cyan">
+          <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+        </div>
+        <div>
+          <span data-fa="تغییر زبان" data-en="Change Language">تغییر زبان</span>
+          <div class="menu-desc" id="langDesc">فارسی / English</div>
+        </div>
       </div>
-      <div class="menu-link-btn" onclick="openSupportGmail()" style="flex: 1; min-width: 70px; border-color: rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.02);">
-        <svg viewBox="0 0 24 24" style="fill: #ef4444;"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        <span data-fa="جیمیل" data-en="Gmail">جیمیل</span>
+      <div class="menu-item" onclick="openSettingsView()">
+        <div class="menu-icon-box icon-box-emerald">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6-3.6z"/></svg>
+        </div>
+        <div>
+          <span data-fa="تنظیمات پیشرفته" data-en="Advanced Settings">تنظیمات پیشرفته</span>
+          <div class="menu-desc" data-fa="کیل سوئیچ، DoH، IPv6" data-en="Kill Switch, DoH, IPv6">کیل سوئیچ، DoH، IPv6</div>
+        </div>
       </div>
-      <div class="menu-link-btn" onclick="openGitHubRepo()" style="flex: 1; min-width: 70px; border-color: rgba(6, 182, 212, 0.25); background: rgba(6, 182, 212, 0.02);">
-        <svg viewBox="0 0 24 24" style="fill: var(--neon-cyan);"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        <span data-fa="گیت‌هاب" data-en="GitHub">GitHub</span>
+      <div class="menu-item" onclick="openThemeSelectorModal()">
+        <div class="menu-icon-box icon-box-violet">
+          <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.21 19.57 10.56 20 12 20c4.97 0 9-4.03 9-9 0-4.97-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+        </div>
+        <div>
+          <span data-fa="تم برنامه" data-en="App Theme">تم برنامه</span>
+          <div class="menu-desc" id="themeDesc" data-fa="تاریک سایبر / روشن صدفی" data-en="Cyber Dark / Pearl Light">تاریک سایبر / روشن صدفی</div>
+        </div>
+      </div>
+      <div class="menu-item" onclick="closeMenu(); openRadarModal();">
+        <div class="menu-icon-box icon-box-emerald">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <div>
+          <span data-fa="رادار مسابقه دی‌ان‌اس" data-en="DNS Radar Arena">رادار مسابقه دی‌ان‌اس</span>
+          <div class="menu-desc" data-fa="بنچمارک زنده ۳۰ سرور و تعیین برنده" data-en="Live 30+ servers arena & benchmark">بنچمارک زنده ۳۰ سرور و تعیین برنده</div>
+        </div>
+      </div>
+      <div class="menu-item" onclick="closeMenu(); openGameHubModal();">
+        <div class="menu-icon-box icon-box-violet">
+          <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        </div>
+        <div>
+          <span data-fa="لانچر هوشمند بازی‌ها" data-en="Smart Game Hub">لانچر هوشمند بازی‌ها</span>
+          <div class="menu-desc" data-fa="شناسایی بازی‌های گوشی و بوست دی‌ان‌اس" data-en="Auto-detect games & 1-tap boost">شناسایی بازی‌های گوشی و بوست دی‌ان‌اس</div>
+        </div>
+      </div>
+      <div class="menu-item" onclick="closeMenu(); openShareModal();">
+        <div class="menu-icon-box icon-box-cyan">
+          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
+        </div>
+        <div>
+          <span data-fa="مرکز اشتراک‌گذاری و کد QR" data-en="DNS Share & QR Hub">مرکز اشتراک‌گذاری و کد QR</span>
+          <div class="menu-desc" data-fa="کارت گرافیکی VIP، QR داینامیک، بکاپ" data-en="VIP graphic card, dynamic QR, backup">کارت گرافیکی VIP، QR داینامیک، بکاپ</div>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item" onclick="openAboutModal()">
+        <div class="menu-icon-box icon-box-amber">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        </div>
+        <div>
+          <span data-fa="درباره" data-en="About">درباره</span>
+          <div class="menu-desc" data-fa="SFDNS Cyber Edition v2.5" data-en="SFDNS Cyber Edition v2.5">SFDNS Cyber Edition v2.5</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="menu-footer">
-    <div>SFDNS Pro v2.5</div>
+    <div class="menu-dev-box">
+      <div class="menu-dev-title" data-fa="پشتیبانی برنامه" data-en="App Support">پشتیبانی برنامه</div>
+      <div class="menu-dev-links" style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <div class="menu-link-btn" onclick="openSupportTg()" style="flex: 1; min-width: 80px;">
+          <svg viewBox="0 0 24 24" style="fill: currentColor;"><circle cx="12" cy="10" r="3.5" /><path d="M12 15c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z" /><path d="M6 10a6 6 0 0 1 12 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /><rect x="5.5" y="9" width="1.5" height="3.5" rx="0.75" /><rect x="17" y="9" width="1.5" height="3.5" rx="0.75" /><path d="M17 11a2.5 2.5 0 0 1-2.5 2.5H13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+          <span data-fa="پشتیبانی" data-en="Support">پشتیبانی</span>
+        </div>
+        <div class="menu-link-btn" onclick="openChannelTg()" style="flex: 1; min-width: 80px;">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.49 8.24l-1.89 8.9c-.14.63-.51.78-1.04.49l-2.88-2.12-1.39 1.34c-.15.15-.28.28-.58.28l.2-2.92 5.32-4.8c.23-.21-.05-.32-.36-.12L10.02 14.8l-2.83-.88c-.61-.19-.62-.61.13-.91l11.07-4.27c.51-.19.96.11.8.76z"/></svg>
+          <span data-fa="کانال" data-en="Channel">کانال</span>
+        </div>
+        <div class="menu-link-btn" onclick="openSupportGmail()" style="flex: 1; min-width: 70px; border-color: rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.02);">
+          <svg viewBox="0 0 24 24" style="fill: #ef4444;"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <span data-fa="جیمیل" data-en="Gmail">جیمیل</span>
+        </div>
+        <div class="menu-link-btn" onclick="openGitHubRepo()" style="flex: 1; min-width: 70px; border-color: rgba(6, 182, 212, 0.25); background: rgba(6, 182, 212, 0.02);">
+          <svg viewBox="0 0 24 24" style="fill: var(--neon-cyan);"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span data-fa="گیت‌هاب" data-en="GitHub">GitHub</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-footer">
+      <div>SFDNS Pro v2.5</div>
+    </div>
   </div>
-</div>
-</div>
 
 <!-- Language Selector Sheet -->
 <div class="modal-overlay" id="langModalOverlay" onclick="closeLangModal()"></div>
@@ -1333,7 +1602,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descKillSwitch')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🛑</span>
+          <div class="menu-icon-box icon-box-red">
+            <svg viewBox="0 0 24 24"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-5.45 9-12V6l-9-4zm-1 6h2v6h-2V8zm0 8h2v2h-2v-2z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="کیل سوئیچ (Kill Switch)" data-en="Kill Switch">کیل سوئیچ (Kill Switch)</span>
             <div class="setting-desc-short" data-fa="برای نمایش توضیحات بیشتر ضربه بزنید" data-en="Tap to show detailed description">برای نمایش توضیحات بیشتر ضربه بزنید</div>
@@ -1358,7 +1629,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descDoH')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🔒</span>
+          <div class="menu-icon-box icon-box-cyan">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="دی‌ان‌اس امن (DoH)" data-en="DNS over HTTPS (DoH)">دی‌ان‌اس امن (DoH)</span>
             <div class="setting-desc-short" data-fa="برای نمایش توضیحات بیشتر ضربه بزنید" data-en="Tap to show detailed description">برای نمایش توضیحات بیشتر ضربه بزنید</div>
@@ -1383,7 +1656,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descIPv6')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🌐</span>
+          <div class="menu-icon-box icon-box-violet">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="پشتیبانی از IPv6" data-en="IPv6 Support">پشتیبانی از IPv6</span>
             <div class="setting-desc-short" data-fa="برای نمایش توضیحات بیشتر ضربه بزنید" data-en="Tap to show detailed description">برای نمایش توضیحات بیشتر ضربه بزنید</div>
@@ -1408,7 +1683,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descAutoConnect')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🔄</span>
+          <div class="menu-icon-box icon-box-emerald">
+            <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="اتصال خودکار" data-en="Auto-Connect">اتصال خودکار</span>
             <div class="setting-desc-short" data-fa="برای نمایش توضیحات بیشتر ضربه بزنید" data-en="Tap to show detailed description">برای نمایش توضیحات بیشتر ضربه بزنید</div>
@@ -1433,7 +1710,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descSplitTunnel')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">⚙️</span>
+          <div class="menu-icon-box icon-box-amber">
+            <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="تونلینگ برنامه‌ها" data-en="Split Tunneling">تونلینگ برنامه‌ها</span>
             <div class="setting-desc-short" data-fa="برای نمایش توضیحات بیشتر ضربه بزنید" data-en="Tap to show detailed description">برای نمایش توضیحات بیشتر ضربه بزنید</div>
@@ -1461,7 +1740,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descFlushCache')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🚀</span>
+          <div class="menu-icon-box icon-box-cyan">
+            <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="پاکسازی و تقویت کش دی‌ان‌اس" data-en="DNS Cache Flush & Boost">پاکسازی و تقویت کش دی‌ان‌اس</span>
             <div class="setting-desc-short" data-fa="پاکسازی فوری کش شبکه جهت حل اختلال و افت سرعت" data-en="Instantly clear network caches to resolve lags & stalls">پاکسازی فوری کش شبکه جهت حل اختلال و افت سرعت</div>
@@ -1483,7 +1764,9 @@
     <div class="setting-card-v2" onclick="toggleAccordion('descPingStabilizer')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🎯</span>
+          <div class="menu-icon-box icon-box-violet">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="تثبیت‌کننده هوشمند پینگ (گیمینگ)" data-en="Gaming Ping Stabilizer">تثبیت‌کننده هوشمند پینگ (گیمینگ)</span>
             <div class="setting-desc-short" data-fa="جلوگیری فعال از نوسان پینگ و قطعی ناگهانی پکت‌ها" data-en="Actively prevent ping spikes and packet losses in real-time">جلوگیری فعال از نوسان پینگ و قطعی ناگهانی پکت‌ها</div>
@@ -1508,7 +1791,9 @@
     <div class="setting-card-v2" id="iranCarrierOptimizationCard" onclick="toggleAccordion('descIranOptimization')">
       <div class="setting-header-v2">
         <div class="setting-title-box">
-          <span style="font-size: 18px;">🇮🇷</span>
+          <div class="menu-icon-box icon-box-emerald">
+            <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.1c-1.46-1.84-2.35-4.16-2.35-6.7 0-5.85 4.65-10.6 10.4-10.97C18.2 1.05 23 5.76 23 11.5c0 2.54-.89 4.86-2.35 6.7l-1.38-1.49C20.5 15.17 21.25 13.22 21.25 11.1c0-4.97-4.03-9-9.25-9zm0 4c-2.76 0-5 2.24-5 5 0 1.29.49 2.47 1.3 3.36l1.43-1.43c-.45-.53-.73-1.22-.73-1.93 0-1.66 1.34-3 3-3s3 1.34 3 3c0 .71-.28 1.4-.73 1.93l1.43 1.43c.81-.89 1.3-2.07 1.3-3.36 0-2.76-2.24-5-5-5zm0 4c-.55 0-1 .45-1 1 0 .28.11.53.29.71l1.42 1.42c.18.18.43.29.71.29 1.1 0 2-.9 2-2 0-.55-.45-1-1-1h-2.42z"/></svg>
+          </div>
           <div>
             <span class="setting-title" data-fa="بهینه‌ساز شبکه ایران (Carrier Engine)" data-en="Iran Carrier Optimization Engine">بهینه‌ساز شبکه ایران (Carrier Engine)</span>
             <div class="setting-desc-short" data-fa="برای انتخاب اپراتور و افزایش پایداری ضربه بزنید" data-en="Tap to select your carrier and boost stability">برای انتخاب اپراتور و افزایش پایداری ضربه بزنید</div>
@@ -2116,6 +2401,165 @@
   </div>
 </div>
 
+<!-- DNS Share, VIP Graphic Card & QR Hub Modal (Feature 5) -->
+<div class="modal-overlay" id="shareModalOverlay" onclick="closeShareModal()"></div>
+<div class="modal" id="shareModal" style="max-height: 88vh;">
+  <div class="modal-header">
+    <div class="modal-title" style="color: var(--neon-cyan); text-shadow: 0 0 10px rgba(6, 182, 212, 0.4);" data-fa="🔗 مرکز اشتراک‌گذاری، کارت VIP و کد QR" data-en="🔗 DNS Share, VIP Card & QR Hub">🔗 مرکز اشتراک‌گذاری، کارت VIP و کد QR</div>
+    <div class="modal-close" onclick="closeShareModal()">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </div>
+  </div>
+  <div class="modal-body" style="padding: 14px 18px;">
+    <!-- Selector of which DNS to share -->
+    <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px 12px;">
+      <span style="font-size: 12px; color: var(--text-dim);" data-fa="دی‌ان‌اس انتخابی:" data-en="Selected DNS:">دی‌ان‌اس انتخابی:</span>
+      <select id="shareDnsSelect" onchange="onShareDnsSelectChange()" style="background: #111827; color: var(--neon-cyan); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 10px; font-family: var(--vazir); font-size: 12px; font-weight: bold; outline: none; max-width: 60%;">
+      </select>
+    </div>
+
+    <!-- Tabs: 1. کارت تصویری VIP | 2. کد QR و لینک هوشمند | 3. ایمپورت و بکاپ -->
+    <div class="share-tabs-nav">
+      <button class="share-tab-btn active" id="shareTabBtnCard" onclick="switchShareTab('card')" data-fa="🎨 کارت VIP" data-en="🎨 VIP Card">🎨 کارت VIP</button>
+      <button class="share-tab-btn" id="shareTabBtnQr" onclick="switchShareTab('qr')" data-fa="📱 کد QR و لینک" data-en="📱 QR & Link">📱 کد QR و لینک</button>
+      <button class="share-tab-btn" id="shareTabBtnImport" onclick="switchShareTab('import')" data-fa="📥 ایمپورت و بکاپ" data-en="📥 Import & Backup">📥 ایمپورت و بکاپ</button>
+    </div>
+
+    <!-- Tab 1: VIP Graphic Card -->
+    <div id="shareTabCardContent">
+      <div class="vip-card-container">
+        <canvas id="vipCardCanvas" width="600" height="360" class="vip-card-canvas"></canvas>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 10px;">
+        <button class="btn-primary" onclick="shareVipCardNative()" style="flex: 1; padding: 12px; font-size: 13px; font-weight: bold; background: linear-gradient(135deg, #06b6d4, #3b82f6); border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;" data-fa="📤 ارسال تصویر به دوستان" data-en="📤 Share Image Card">
+          <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
+          <span data-fa="ارسال تصویر به دوستان" data-en="Share Card Image">ارسال تصویر به دوستان</span>
+        </button>
+        <button class="btn-primary" onclick="copySmartLinkAction()" style="padding: 12px 16px; font-size: 13px; font-weight: bold; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text);" title="کپی لینک" data-fa="📋 کپی لینک" data-en="📋 Copy Link">
+          📋
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 2: QR Code & Smart Link -->
+    <div id="shareTabQrContent" style="display: none;">
+      <div class="qr-code-display-wrap">
+        <canvas id="qrCodeCanvas" width="200" height="200" class="qr-canvas-element"></canvas>
+        <div style="font-size: 11px; color: var(--neon-cyan); margin-top: 10px; font-weight: bold;" data-fa="اسکن توسط دوربین یا دوستان در SFDNS" data-en="Scan with camera or SFDNS App">اسکن توسط دوربین یا دوستان در SFDNS</div>
+      </div>
+      <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;">
+        <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 4px;" data-fa="لینک هوشمند SFDNS (sfdns://):" data-en="SFDNS Smart Link (sfdns://):">لینک هوشمند SFDNS (sfdns://):</div>
+        <div id="smartLinkTextDisplay" style="font-family: var(--mono); font-size: 11px; color: var(--neon-cyan); word-break: break-all; user-select: all;">sfdns://...</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-primary" onclick="copySmartLinkAction()" style="flex: 1; padding: 12px; font-size: 13px; font-weight: bold; background: var(--neon-cyan); color: #000; border: none; border-radius: 12px;" data-fa="📋 کپی لینک هوشمند" data-en="📋 Copy Smart Link">
+          📋 کپی لینک هوشمند
+        </button>
+        <button class="btn-primary" onclick="shareLinkTextAction()" style="flex: 1; padding: 12px; font-size: 13px; font-weight: bold; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text);" data-fa="📤 اشتراک متنی" data-en="📤 Share Text">
+          📤 اشتراک متنی
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 3: Import & Backup -->
+    <div id="shareTabImportContent" style="display: none;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.25); border-radius: 12px; padding: 12px;">
+          <div style="font-size: 13px; font-weight: bold; color: var(--neon-cyan); margin-bottom: 6px;" data-fa="📥 دریافت مستقیم از کلیپ‌بورد" data-en="📥 Quick Paste from Clipboard">📥 دریافت مستقیم از کلیپ‌بورد</div>
+          <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 10px;" data-fa="اگر لینک sfdns:// یا آی‌پی دی‌ان‌اس را کپی کرده‌اید، با زدن دکمه زیر خودکار استخراج و اضافه می‌شود:" data-en="If you copied an sfdns:// link or DNS IPs, click below to auto-import:">اگر لینک sfdns:// یا آی‌پی دی‌ان‌اس را کپی کرده‌اید، با زدن دکمه زیر خودکار استخراج و اضافه می‌شود:</p>
+          <button class="btn-primary" onclick="importFromClipboardAction()" style="width: 100%; padding: 10px; font-size: 12px; font-weight: bold; background: var(--neon-cyan); color: #000; border: none; border-radius: 10px;" data-fa="📋 بررسی و وارد کردن از کلیپ‌بورد" data-en="📋 Read Clipboard & Import">
+            📋 بررسی و وارد کردن از کلیپ‌بورد
+          </button>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px;">
+          <div style="font-size: 13px; font-weight: bold; color: var(--text); margin-bottom: 6px;" data-fa="📂 پشتیبان‌گیری و ایمپورت گروهی (JSON)" data-en="📂 Batch Backup & Restore (JSON)">📂 پشتیبان‌گیری و ایمپورت گروهی (JSON)</div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-primary" onclick="exportAllDnsJson()" style="flex: 1; padding: 10px; font-size: 12px; font-weight: bold; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text);" data-fa="📤 دانلود بکاپ (JSON)" data-en="📤 Export JSON">📤 دانلود بکاپ</button>
+            <button class="btn-primary" onclick="promptImportDnsJson()" style="flex: 1; padding: 10px; font-size: 12px; font-weight: bold; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text);" data-fa="📥 بازگردانی بکاپ" data-en="📥 Import JSON">📥 بازگردانی بکاپ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live DNS Radar Arena Modal (Feature 4) -->
+<div class="modal-overlay" id="radarModalOverlay" onclick="closeRadarModal()"></div>
+<div class="modal" id="radarModal" style="max-height: 88vh;">
+  <div class="modal-header">
+    <div class="modal-title" style="color: var(--neon-green); text-shadow: 0 0 10px rgba(16,185,129,0.4);" data-fa="📊 رادار مسابقه و بنچمارک دی‌ان‌اس‌ها" data-en="📊 Live DNS Radar Arena">📊 رادار مسابقه و بنچمارک دی‌ان‌اس‌ها</div>
+    <div class="modal-close" onclick="closeRadarModal()">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </div>
+  </div>
+  <div class="modal-body" style="padding: 14px 18px;">
+    <!-- Operator & ISP Detection Badge -->
+    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 16px;">📡</span>
+        <span id="radarOperatorText" style="font-size: 12px; font-weight: bold; color: var(--neon-green);" data-fa="اپراتور: در حال شناسایی..." data-en="Carrier: Detecting...">اپراتور: در حال شناسایی...</span>
+      </div>
+      <span id="radarTestedCount" style="font-family: var(--mono); font-size: 11px; color: var(--neon-cyan); font-weight: bold;">0 / 30</span>
+    </div>
+
+    <!-- Animated Radar HUD -->
+    <div class="radar-hud-wrap">
+      <canvas id="radarCanvas" width="160" height="160" class="radar-canvas-element"></canvas>
+    </div>
+
+    <!-- Controls Row -->
+    <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+      <button class="btn-primary" id="btnStartRadarArena" onclick="startRadarBenchmark()" style="flex: 1; padding: 12px; font-size: 13px; font-weight: bold; background: linear-gradient(135deg, #10b981, #06b6d4); border: none; border-radius: 12px; color: #000;" data-fa="⚡ شروع مسابقه و پایش ۳۰ سرور" data-en="⚡ Start Live Arena Test">
+        ⚡ شروع مسابقه و پایش ۳۰ سرور
+      </button>
+      <button class="btn-primary" id="btnConnectWinner" onclick="connectRadarWinner()" style="display: none; padding: 12px 16px; font-size: 13px; font-weight: bold; background: linear-gradient(135deg, #f59e0b, #ef4444); border: none; border-radius: 12px; color: #fff;" data-fa="👑 اتصال به برنده" data-en="👑 Connect Winner">
+        👑 اتصال به برنده
+      </button>
+    </div>
+
+    <!-- Leaderboard -->
+    <div style="font-size: 12px; font-weight: bold; color: var(--text-dim); margin-bottom: 8px;" data-fa="🏆 رتبه‌بندی سرورها بر اساس کمترین پینگ:" data-en="🏆 Leaderboard by lowest latency:">🏆 رتبه‌بندی سرورها بر اساس کمترین پینگ:</div>
+    <div id="radarLeaderboardList" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;">
+      <!-- Populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- Smart Game Hub & Launcher Modal (Feature 3) -->
+<div class="modal-overlay" id="gameHubModalOverlay" onclick="closeGameHubModal()"></div>
+<div class="modal" id="gameHubModal" style="max-height: 88vh;">
+  <div class="modal-header">
+    <div class="modal-title" style="color: #c084fc; text-shadow: 0 0 10px rgba(192,132,252,0.4);" data-fa="🚀 لانچر هوشمند و بوست بازی‌ها" data-en="🚀 Smart Game Hub & Launcher">🚀 لانچر هوشمند و بوست بازی‌ها</div>
+    <div class="modal-close" onclick="closeGameHubModal()">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </div>
+  </div>
+  <div class="modal-body" style="padding: 14px 18px;">
+    <p style="font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 12px;" data-fa="با انتخاب هر بازی، بهترین دی‌ان‌اس اختصاصی تنظیم شده، VPN متصل گشته و بازی مستقیماً باز می‌شود:" data-en="Select any title: the optimal DNS is set, VPN connects, and the game launches instantly:">
+      با انتخاب هر بازی، بهترین دی‌ان‌اس اختصاصی تنظیم شده، VPN متصل گشته و بازی مستقیماً باز می‌شود:
+    </p>
+    <div class="game-hub-grid" id="gameHubGrid">
+      <!-- Populated dynamically with installed detection -->
+    </div>
+  </div>
+</div>
+
+<!-- Floating Clipboard Detection Banner -->
+<div id="clipboardDetectedBanner" class="clipboard-banner" style="display: none;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <span style="font-size: 24px;">📋</span>
+    <div>
+      <div style="font-size: 13px; font-weight: bold; color: var(--neon-cyan);" data-fa="دی‌ان‌اس در حافظه کپی شناسایی شد!" data-en="DNS detected in clipboard!">دی‌ان‌اس در حافظه کپی شناسایی شد!</div>
+      <div id="clipboardDetectedName" style="font-size: 11px; color: var(--text-dim);">...</div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 6px;">
+    <button onclick="applyDetectedClipboardDns()" style="background: var(--neon-cyan); color: #000; border: none; padding: 6px 12px; border-radius: 8px; font-family: var(--vazir); font-size: 12px; font-weight: bold; cursor: pointer;" data-fa="اتصال سریع" data-en="Quick Connect">اتصال سریع</button>
+    <button onclick="dismissClipboardBanner()" style="background: transparent; color: var(--text-dim); border: none; padding: 6px 8px; font-size: 14px; cursor: pointer;">✕</button>
+  </div>
+</div>
+
 <script>
 const dnsServers = [
   {name:"Clash Royale Boost", fa:"کلش رویال بوست (ویژه کلش و گیم)", tag:"👑 گیمینگ / ویژه کلش رویال", tagEn:"👑 Gaming / Clash Royale", cls:"game", p:"78.157.42.100", s:"10.202.10.11"},
@@ -2148,7 +2592,21 @@ const dnsServers = [
   {name:"Google (Public)", fa:"گوگل (عمومی)", tag:"عمومی / پایدار", tagEn:"Public / Stable", cls:"", p:"8.8.8.8", s:"8.8.4.4"},
   {name:"OpenDNS (Public)", fa:"اوپن‌دی‌ان‌اس (عمومی)", tag:"عمومی / امنیتی", tagEn:"Public / Security", cls:"security", p:"208.67.222.222", s:"208.67.220.220"},
   {name:"Quad9 (Public)", fa:"کوآد ۹ (عمومی)", tag:"عمومی / امنیتی", tagEn:"Public / Security", cls:"security", p:"9.9.9.9", s:"149.112.112.112"},
-  {name:"AdGuard (Public)", fa:"ادگارد (عمومی)", tag:"عمومی / حذف تبلیغات", tagEn:"Public / AdBlock", cls:"security", p:"94.140.14.14", s:"94.140.15.15"}
+  {name:"AdGuard (Public)", fa:"ادگارد (عمومی)", tag:"عمومی / حذف تبلیغات", tagEn:"Public / AdBlock", cls:"security", p:"94.140.14.14", s:"94.140.15.15"},
+  {name:"Control D (VIP)", fa:"کنترل دی (VIP)", tag:"⭐ VIP / گیمینگ و عمومی", tagEn:"⭐ VIP / Gaming & Public", cls:"game", p:"76.76.2.0", s:"76.76.10.0"},
+  {name:"DNS4EU (VIP)", fa:"دی‌ان‌اس فور اروپا (VIP)", tag:"⭐ VIP / گیمینگ اروپا", tagEn:"⭐ VIP / Euro Gaming", cls:"game", p:"86.54.11.100", s:"86.54.11.200"},
+  {name:"Neustar UltraDNS", fa:"نوستار اولترا (وریساین)", tag:"پایدار / گیمینگ", tagEn:"Stable / Gaming", cls:"game", p:"64.6.64.6", s:"64.6.65.6"},
+  {name:"Yandex DNS", fa:"یاندکس دی‌ان‌اس", tag:"گیمینگ / شرق اروپا", tagEn:"Gaming / East EU", cls:"game", p:"77.88.8.8", s:"77.88.8.1"},
+  {name:"Comodo Secure", fa:"کومودو سکور", tag:"امنیتی / دانلود", tagEn:"Security / Download", cls:"security", p:"8.26.56.26", s:"8.20.247.20"},
+  {name:"DNS.WATCH", fa:"دی‌ان‌اس واچ", tag:"بدون فیلتر / بدون لاگ", tagEn:"Unfiltered / NoLog", cls:"", p:"84.200.69.80", s:"84.200.70.40"},
+  {name:"UncensoredDNS", fa:"آن‌سنسورد دی‌ان‌اس", tag:"رفع تحریم / بدون سانسور", tagEn:"Bypass / Uncensored", cls:"", p:"91.239.100.100", s:"89.233.43.71"},
+  {name:"NTT DNS (VIP)", fa:"ان‌تی‌تی دی‌ان‌اس (VIP)", tag:"⭐ VIP / گیمینگ رقابتی", tagEn:"⭐ VIP / Pro Gaming", cls:"game", p:"129.250.35.250", s:"129.250.35.251"},
+  {name:"Lag Zero (VIP)", fa:"لگ زیرو (VIP)", tag:"⭐ VIP / گیمینگ فوقتخصصی", tagEn:"⭐ VIP / Ultra Low Lag", cls:"game", p:"95.38.132.152", s:"95.38.132.153"},
+  {name:"Mullvad DNS", fa:"مولواد دی‌ان‌اس", tag:"حریم خصوصی / گیمینگ", tagEn:"Privacy / Gaming", cls:"security", p:"194.242.2.2", s:"194.242.2.3"},
+  {name:"FFMUC DNS", fa:"اف‌اف‌ام‌یوسی (آلمان)", tag:"گیمینگ اروپا / آلمان", tagEn:"Euro Gaming / Germany", cls:"game", p:"5.1.66.255", s:"185.150.99.255"},
+  {name:"Zeus (Bypass)", fa:"زیوس (رفع تحریم)", tag:"گیمینگ / رفع تحریم", tagEn:"Gaming / Bypass", cls:"game", p:"37.32.5.60", s:"37.32.5.61"},
+  {name:"DNS Pro (VIP)", fa:"دی‌ان‌اس پرو (VIP)", tag:"⭐ VIP / رفع تحریم تخصصی", tagEn:"⭐ VIP / Anti Sanction", cls:"", p:"87.107.110.109", s:"87.107.110.110"},
+  {name:"DynX (Anti-Sanctions)", fa:"داین ایکس (رفع تحریم)", tag:"رفع تحریم تخصصی", tagEn:"Anti-Sanctions", cls:"", p:"10.139.177.18", s:"10.139.177.16"}
 ];
 
 let selectedDNS = null;
@@ -2353,6 +2811,29 @@ const settings = { kill_switch: false, doh: false, ipv6: false, auto_connect: fa
 
 function init() {
   try {
+    // Load saved language
+    let savedLang = localStorage.getItem("sfdns_lang");
+    if (window.AndroidBridge && typeof AndroidBridge.getSetting === 'function') {
+      const bridgeLang = AndroidBridge.getSetting("app_lang");
+      if (bridgeLang) savedLang = bridgeLang;
+    }
+    if (savedLang && ['fa', 'en', 'ar', 'ru'].includes(savedLang)) {
+      currentLang = savedLang;
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = (currentLang === 'fa' || currentLang === 'ar') ? 'rtl' : 'ltr';
+    }
+
+    // Load saved theme
+    let savedTheme = localStorage.getItem("sfdns_theme");
+    if (window.AndroidBridge && typeof AndroidBridge.getSetting === 'function') {
+      const bridgeTheme = AndroidBridge.getSetting("app_theme");
+      if (bridgeTheme) savedTheme = bridgeTheme;
+    }
+    if (savedTheme && ['system', 'dark', 'light'].includes(savedTheme)) {
+      currentTheme = savedTheme;
+      applyTheme();
+    }
+
     loadCustomDns();
     renderDnsList();
     updateLang();
@@ -2523,7 +3004,11 @@ function filterDnsList() {
           </div>
         </div>
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button onclick="openShareModal(${i}, event)" title="اشتراک‌گذاری / QR" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3); color:var(--neon-cyan); cursor:pointer; padding:3px 6px; display:flex; align-items:center; justify-content:center; border-radius:6px; font-size:10px; font-weight:bold; gap:3px;">
+              <svg style="width:12px; height:12px; fill:currentColor;" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/></svg>
+              <span>QR</span>
+            </button>
             ${d.isCustom ? `
               <button onclick="deleteCustomDns(${i}, event)" style="background:none; border:none; color:var(--neon-red); cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center; border-radius:4px;">
                 <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
@@ -3884,30 +4369,42 @@ function openGitHubRepo() {
 }
 
 // --- LANGUAGE SHEET FUNCTIONS ---
-function openLangModal() {
+function openLangModal(e) {
+  if (e) e.stopPropagation();
   closeMenu();
   setTimeout(() => {
-    document.getElementById('langModalOverlay').classList.add('open');
-    document.getElementById('langModal').classList.add('open');
+    const overlay = document.getElementById('langModalOverlay');
+    const modal = document.getElementById('langModal');
+    if (overlay) overlay.classList.add('open');
+    if (modal) modal.classList.add('open');
     
-    document.getElementById('langCheckFa').style.display = currentLang === 'fa' ? 'block' : 'none';
-    document.getElementById('langCheckEn').style.display = currentLang === 'en' ? 'block' : 'none';
-    if (document.getElementById('langCheckAr')) {
-      document.getElementById('langCheckAr').style.display = currentLang === 'ar' ? 'block' : 'none';
-    }
-    if (document.getElementById('langCheckRu')) {
-      document.getElementById('langCheckRu').style.display = currentLang === 'ru' ? 'block' : 'none';
-    }
-  }, 180);
+    const checkFa = document.getElementById('langCheckFa');
+    const checkEn = document.getElementById('langCheckEn');
+    const checkAr = document.getElementById('langCheckAr');
+    const checkRu = document.getElementById('langCheckRu');
+
+    if (checkFa) checkFa.style.display = currentLang === 'fa' ? 'block' : 'none';
+    if (checkEn) checkEn.style.display = currentLang === 'en' ? 'block' : 'none';
+    if (checkAr) checkAr.style.display = currentLang === 'ar' ? 'block' : 'none';
+    if (checkRu) checkRu.style.display = currentLang === 'ru' ? 'block' : 'none';
+  }, 10);
 }
 
 function closeLangModal() {
-  document.getElementById('langModalOverlay').classList.remove('open');
-  document.getElementById('langModal').classList.remove('open');
+  const overlay = document.getElementById('langModalOverlay');
+  const modal = document.getElementById('langModal');
+  if (overlay) overlay.classList.remove('open');
+  if (modal) modal.classList.remove('open');
 }
 
 function selectLanguage(lang) {
   currentLang = lang;
+  try {
+    localStorage.setItem("sfdns_lang", lang);
+    if (window.AndroidBridge && typeof AndroidBridge.saveSetting === 'function') {
+      AndroidBridge.saveSetting("app_lang", lang);
+    }
+  } catch(e) {}
   document.documentElement.lang = currentLang;
   document.documentElement.dir = (currentLang === 'fa' || currentLang === 'ar') ? 'rtl' : 'ltr';
   updateLang();
@@ -3970,11 +4467,14 @@ try {
   console.error("System theme listener failed", e);
 }
 
-function openThemeSelectorModal() {
+function openThemeSelectorModal(e) {
+  if (e) e.stopPropagation();
   closeMenu();
   setTimeout(() => {
-    document.getElementById('themeModalOverlay').classList.add('open');
-    document.getElementById('themeModal').classList.add('open');
+    const overlay = document.getElementById('themeModalOverlay');
+    const modal = document.getElementById('themeModal');
+    if (overlay) overlay.classList.add('open');
+    if (modal) modal.classList.add('open');
     
     const themeIds = ['System', 'Dark', 'Light'];
     themeIds.forEach(id => {
@@ -3983,18 +4483,27 @@ function openThemeSelectorModal() {
         el.style.display = currentTheme === id.toLowerCase() ? 'block' : 'none';
       }
     });
-  }, 180);
+  }, 10);
 }
 
 function closeThemeSelectorModal() {
-  document.getElementById('themeModalOverlay').classList.remove('remove');
-  document.getElementById('themeModalOverlay').classList.remove('open');
-  document.getElementById('themeModal').classList.remove('open');
+  const overlay = document.getElementById('themeModalOverlay');
+  const modal = document.getElementById('themeModal');
+  if (overlay) {
+    overlay.classList.remove('remove');
+    overlay.classList.remove('open');
+  }
+  if (modal) modal.classList.remove('open');
 }
 
 function selectTheme(theme) {
   currentTheme = theme;
-  localStorage.setItem('sfdns_theme', theme);
+  try {
+    localStorage.setItem('sfdns_theme', theme);
+    if (window.AndroidBridge && typeof AndroidBridge.saveSetting === 'function') {
+      AndroidBridge.saveSetting("app_theme", theme);
+    }
+  } catch(e) {}
   applyTheme();
   closeThemeSelectorModal();
   showToast(currentLang === 'fa' ? 'تم برنامه تغییر کرد' : 'App theme updated', 'success');
@@ -4010,17 +4519,22 @@ window.onVpnStatusChanged = (status) => {
 };
 
 // --- ABOUT MODAL FUNCTIONS ---
-function openAboutModal() {
+function openAboutModal(e) {
+  if (e) e.stopPropagation();
   closeMenu();
   setTimeout(() => {
-    document.getElementById('aboutModalOverlay').classList.add('open');
-    document.getElementById('aboutModal').classList.add('open');
-  }, 180);
+    const overlay = document.getElementById('aboutModalOverlay');
+    const modal = document.getElementById('aboutModal');
+    if (overlay) overlay.classList.add('open');
+    if (modal) modal.classList.add('open');
+  }, 10);
 }
 
 function closeAboutModal() {
-  document.getElementById('aboutModalOverlay').classList.remove('open');
-  document.getElementById('aboutModal').classList.remove('open');
+  const overlay = document.getElementById('aboutModalOverlay');
+  const modal = document.getElementById('aboutModal');
+  if (overlay) overlay.classList.remove('open');
+  if (modal) modal.classList.remove('open');
 }
 
 // --- WIDGET GUIDE MODAL FUNCTIONS ---
@@ -4607,6 +5121,1069 @@ function toggleAccordion(id) {
   }
 }
 
+/* ==========================================================================
+   STANDALONE QR CODE GENERATOR & BIT MATRIX ENGINE (PURE JAVASCRIPT)
+   ========================================================================== */
+const QRCodeGenerator = (function() {
+  function QR8BitByte(data) {
+    this.mode = 4;
+    this.data = data;
+  }
+  QR8BitByte.prototype = {
+    getLength: function() { return this.data.length; },
+    write: function(buffer) {
+      for (var i = 0; i < this.data.length; i++) {
+        buffer.put(this.data.charCodeAt(i), 8);
+      }
+    }
+  };
+
+  var QRPolynomial = function(num, shift) {
+    if (typeof num.length == "undefined") throw new Error(num.length + "/" + shift);
+    var offset = 0;
+    while (offset < num.length && num[offset] == 0) offset++;
+    this.num = new Array(num.length - offset + shift);
+    for (var i = 0; i < num.length - offset; i++) this.num[i] = num[i + offset];
+  };
+  QRPolynomial.prototype = {
+    get: function(index) { return this.num[index]; },
+    getLength: function() { return this.num.length; },
+    multiply: function(e) {
+      var num = new Array(this.getLength() + e.getLength() - 1);
+      for (var i = 0; i < this.getLength(); i++) {
+        for (var j = 0; j < e.getLength(); j++) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i)) + QRMath.glog(e.get(j)));
+        }
+      }
+      return new QRPolynomial(num, 0);
+    },
+    mod: function(e) {
+      if (this.getLength() - e.getLength() < 0) return this;
+      var ratio = QRMath.glog(this.get(0)) - QRMath.glog(e.get(0));
+      var num = new Array(this.getLength());
+      for (var i = 0; i < this.getLength(); i++) num[i] = this.get(i);
+      for (var i = 0; i < e.getLength(); i++) num[i] ^= QRMath.gexp(QRMath.glog(e.get(i)) + ratio);
+      return new QRPolynomial(num, 0).mod(e);
+    }
+  };
+
+  var QRMath = {
+    glog: function(n) {
+      if (n < 1) throw new Error("glog(" + n + ")");
+      return QRMath.LOG_TABLE[n];
+    },
+    gexp: function(n) {
+      while (n < 0) n += 255;
+      while (n >= 256) n -= 255;
+      return QRMath.EXP_TABLE[n];
+    },
+    EXP_TABLE: new Array(256),
+    LOG_TABLE: new Array(256)
+  };
+  for (var i = 0; i < 8; i++) QRMath.EXP_TABLE[i] = 1 << i;
+  for (var i = 8; i < 256; i++) QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4] ^ QRMath.EXP_TABLE[i - 5] ^ QRMath.EXP_TABLE[i - 6] ^ QRMath.EXP_TABLE[i - 8];
+  for (var i = 0; i < 255; i++) QRMath.LOG_TABLE[QRMath.EXP_TABLE[i]] = i;
+
+  var QRRSBlock = {
+    RS_BLOCK_TABLE: [
+      [1, 26, 19], [1, 26, 16], [1, 26, 13], [1, 26, 9],
+      [1, 44, 34], [1, 44, 28], [1, 44, 22], [1, 44, 16],
+      [1, 70, 55], [1, 70, 44], [2, 35, 17], [2, 35, 13],
+      [1, 100, 80], [2, 50, 32], [2, 50, 24], [4, 25, 9],
+      [1, 134, 108], [2, 67, 43], [2, 33, 15, 2, 34, 16], [2, 33, 11, 2, 34, 12],
+      [2, 86, 68], [4, 43, 27], [4, 43, 19], [4, 43, 15],
+      [2, 98, 78], [4, 49, 31], [2, 32, 14, 4, 33, 15], [4, 39, 13, 1, 40, 14],
+      [2, 121, 97], [2, 60, 38, 2, 61, 39], [4, 40, 18, 2, 41, 19], [4, 40, 14, 2, 41, 15],
+      [2, 146, 116], [3, 58, 36, 2, 59, 37], [4, 36, 16, 4, 37, 17], [4, 36, 12, 4, 37, 13],
+      [2, 86, 68, 2, 87, 69], [4, 69, 43, 1, 70, 44], [6, 43, 19, 2, 44, 20], [6, 43, 15, 2, 44, 16]
+    ],
+    getRSBlocks: function(typeNumber, errorCorrectLevel) {
+      var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+      if (typeof rsBlock == "undefined") throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+      var length = rsBlock.length / 3;
+      var list = [];
+      for (var i = 0; i < length; i++) {
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+        for (var j = 0; j < count; j++) list.push({ totalCount: totalCount, dataCount: dataCount });
+      }
+      return list;
+    },
+    getRsBlockTable: function(typeNumber, errorCorrectLevel) {
+      switch (errorCorrectLevel) {
+        case 1: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+        case 0: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+        case 3: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+        case 2: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+        default: return undefined;
+      }
+    }
+  };
+
+  var QRBitBuffer = function() {
+    this.buffer = [];
+    this.length = 0;
+  };
+  QRBitBuffer.prototype = {
+    get: function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ((this.buffer[bufIndex] >>> (7 - index % 8)) & 1) == 1;
+    },
+    put: function(num, length) {
+      for (var i = 0; i < length; i++) this.putBit(((num >>> (length - i - 1)) & 1) == 1);
+    },
+    putBit: function(bit) {
+      var bufIndex = Math.floor(this.length / 8);
+      if (this.buffer.length <= bufIndex) this.buffer.push(0);
+      if (bit) this.buffer[bufIndex] |= (0x80 >>> (this.length % 8));
+      this.length++;
+    }
+  };
+
+  var QRUtil = {
+    PATTERN_POSITION_TABLE: [
+      [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50], [6, 30, 54]
+    ],
+    getPatternPosition: function(typeNumber) { return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1]; },
+    getMask: function(maskPattern, i, j) {
+      switch (maskPattern) {
+        case 0: return (i + j) % 2 == 0;
+        case 1: return i % 2 == 0;
+        case 2: return j % 3 == 0;
+        case 3: return (i + j) % 3 == 0;
+        case 4: return (Math.floor(i / 2) + Math.floor(j / 3)) % 2 == 0;
+        case 5: return (i * j) % 2 + (i * j) % 3 == 0;
+        case 6: return ((i * j) % 2 + (i * j) % 3) % 2 == 0;
+        case 7: return ((i * j) % 3 + (i + j) % 2) % 2 == 0;
+        default: throw new Error("bad maskPattern:" + maskPattern);
+      }
+    },
+    getErrorCorrectPolynomial: function(errorCorrectLength) {
+      var a = new QRPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i++) a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0));
+      return a;
+    },
+    getLengthInBits: function(mode, type) {
+      if (1 <= type && type < 10) {
+        switch (mode) {
+          case 1: return 10;
+          case 2: return 9;
+          case 4: return 8;
+          case 8: return 8;
+          default: throw new Error("mode:" + mode);
+        }
+      } else {
+        switch (mode) {
+          case 1: return 12;
+          case 2: return 11;
+          case 4: return 16;
+          case 8: return 10;
+          default: throw new Error("mode:" + mode);
+        }
+      }
+    }
+  };
+
+  function QRCode(typeNumber, errorCorrectLevel) {
+    this.typeNumber = typeNumber;
+    this.errorCorrectLevel = errorCorrectLevel;
+    this.modules = null;
+    this.moduleCount = 0;
+    this.dataList = [];
+  }
+  QRCode.prototype = {
+    addData: function(data) { this.dataList.push(new QR8BitByte(data)); },
+    isDark: function(row, col) { return this.modules[row][col]; },
+    getModuleCount: function() { return this.moduleCount; },
+    make: function() {
+      if (this.typeNumber < 1) {
+        var typeNumber = 1;
+        for (; typeNumber < 10; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+          var length = 0;
+          for (var i = 0; i < this.dataList.length; i++) length += this.dataList[i].getLength();
+          if (length <= totalDataCount - 3) break;
+        }
+        this.typeNumber = typeNumber;
+      }
+      this.makeImpl(false, 0);
+    },
+    makeImpl: function(test, maskPattern) {
+      this.moduleCount = this.typeNumber * 4 + 17;
+      this.modules = new Array(this.moduleCount);
+      for (var row = 0; row < this.moduleCount; row++) {
+        this.modules[row] = new Array(this.moduleCount);
+        for (var col = 0; col < this.moduleCount; col++) this.modules[row][col] = null;
+      }
+      this.setupPositionProbePattern(0, 0);
+      this.setupPositionProbePattern(this.moduleCount - 7, 0);
+      this.setupPositionProbePattern(0, this.moduleCount - 7);
+      this.setupTimingPattern();
+      this.setupTypeInfo(test, maskPattern);
+      var data = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+      this.mapData(data, maskPattern);
+    },
+    setupPositionProbePattern: function(row, col) {
+      for (var r = -1; r <= 7; r++) {
+        if (row + r <= -1 || this.moduleCount <= row + r) continue;
+        for (var c = -1; c <= 7; c++) {
+          if (col + c <= -1 || this.moduleCount <= col + c) continue;
+          if ((0 <= r && r <= 6 && (c == 0 || c == 6)) || (0 <= c && c <= 6 && (r == 0 || r == 6)) || (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
+            this.modules[row + r][col + c] = true;
+          } else {
+            this.modules[row + r][col + c] = false;
+          }
+        }
+      }
+    },
+    setupTimingPattern: function() {
+      for (var r = 8; r < this.moduleCount - 8; r++) {
+        if (this.modules[r][6] != null) continue;
+        this.modules[r][6] = (r % 2 == 0);
+      }
+      for (var c = 8; c < this.moduleCount - 8; c++) {
+        if (this.modules[6][c] != null) continue;
+        this.modules[6][c] = (c % 2 == 0);
+      }
+    },
+    setupTypeInfo: function(test, maskPattern) {
+      var data = (this.errorCorrectLevel << 3) | maskPattern;
+      var bits = (data << 10);
+      var d = bits;
+      for (var i = 14; i >= 10; i--) {
+        if ((d >>> i) & 1) d ^= (0x537 << (i - 10));
+      }
+      bits = (data << 10) | d;
+      var mask = 0x5412;
+      bits ^= mask;
+      for (var i = 0; i < 15; i++) {
+        var mod = ((bits >>> i) & 1) == 1;
+        if (i < 6) this.modules[i][8] = mod;
+        else if (i < 8) this.modules[i + 1][8] = mod;
+        else this.modules[this.moduleCount - 15 + i][8] = mod;
+
+        if (i < 8) this.modules[8][this.moduleCount - i - 1] = mod;
+        else if (i < 9) this.modules[8][15 - i - 1 + 1] = mod;
+        else this.modules[8][15 - i - 1] = mod;
+      }
+      this.modules[this.moduleCount - 8][8] = true;
+    },
+    mapData: function(data, maskPattern) {
+      var inc = -1;
+      var row = this.moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+        if (col == 6) col--;
+        while (true) {
+          for (var c = 0; c < 2; c++) {
+            if (this.modules[row][col - c] == null) {
+              var dark = false;
+              if (byteIndex < data.length) dark = (((data[byteIndex] >>> bitIndex) & 1) == 1);
+              var mask = QRUtil.getMask(maskPattern, row, col - c);
+              if (mask) dark = !dark;
+              this.modules[row][col - c] = dark;
+              bitIndex--;
+              if (bitIndex == -1) {
+                byteIndex++;
+                bitIndex = 7;
+              }
+            }
+          }
+          row += inc;
+          if (row < 0 || this.moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    }
+  };
+
+  QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+    var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+    var buffer = new QRBitBuffer();
+    for (var i = 0; i < dataList.length; i++) {
+      var data = dataList[i];
+      buffer.put(data.mode, 4);
+      buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber));
+      data.write(buffer);
+    }
+    var totalDataCount = 0;
+    for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+    if (buffer.length + 4 <= totalDataCount * 8) buffer.put(0, 4);
+    while (buffer.length % 8 != 0) buffer.putBit(false);
+    while (true) {
+      if (buffer.length >= totalDataCount * 8) break;
+      buffer.put(0xEC, 8);
+      if (buffer.length >= totalDataCount * 8) break;
+      buffer.put(0x11, 8);
+    }
+    return QRCode.createBytes(buffer, rsBlocks);
+  };
+
+  QRCode.createBytes = function(buffer, rsBlocks) {
+    var offset = 0;
+    var maxDcCount = 0;
+    var maxEcCount = 0;
+    var dcdata = new Array(rsBlocks.length);
+    var ecdata = new Array(rsBlocks.length);
+    for (var r = 0; r < rsBlocks.length; r++) {
+      var dcCount = rsBlocks[r].dataCount;
+      var ecCount = rsBlocks[r].totalCount - dcCount;
+      maxDcCount = Math.max(maxDcCount, dcCount);
+      maxEcCount = Math.max(maxEcCount, ecCount);
+      dcdata[r] = new Array(dcCount);
+      for (var i = 0; i < dcdata[r].length; i++) dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+      offset += dcCount;
+      var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+      var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+      var modPoly = rawPoly.mod(rsPoly);
+      ecdata[r] = new Array(rsPoly.getLength() - 1);
+      for (var i = 0; i < ecdata[r].length; i++) {
+        var modIndex = i + modPoly.getLength() - ecdata[r].length;
+        ecdata[r][i] = (modIndex >= 0) ? modPoly.get(modIndex) : 0;
+      }
+    }
+    var totalCodeCount = 0;
+    for (var i = 0; i < rsBlocks.length; i++) totalCodeCount += rsBlocks[i].totalCount;
+    var data = new Array(totalCodeCount);
+    var index = 0;
+    for (var i = 0; i < maxDcCount; i++) {
+      for (var r = 0; r < rsBlocks.length; r++) {
+        if (i < dcdata[r].length) data[index++] = dcdata[r][i];
+      }
+    }
+    for (var i = 0; i < maxEcCount; i++) {
+      for (var r = 0; r < rsBlocks.length; r++) {
+        if (i < ecdata[r].length) data[index++] = ecdata[r][i];
+      }
+    }
+    return data;
+  };
+
+  return {
+    generateMatrix: function(text) {
+      var qr = new QRCode(0, 1);
+      qr.addData(text);
+      qr.make();
+      return qr;
+    }
+  };
+})();
+
+/* ==========================================================================
+   FEATURE 5: DNS SHARE, VIP GRAPHIC CARD & QR ENGINE (TOP PRIORITY)
+   ========================================================================== */
+let activeShareDns = null;
+let currentShareTab = 'card';
+let detectedClipboardDnsCandidate = null;
+
+function buildSmartDnsUri(dns) {
+  if (!dns) return 'sfdns://dns';
+  const params = new URLSearchParams();
+  params.set('name', dns.name || 'DNS');
+  if (dns.fa) params.set('fa', dns.fa);
+  params.set('p', dns.p || '');
+  params.set('s', dns.s || '');
+  if (dns.ipv6_p) params.set('p6', dns.ipv6_p);
+  if (dns.ipv6_s) params.set('s6', dns.ipv6_s);
+  if (dns.tag) params.set('tag', dns.tag);
+  return 'sfdns://dns?' + params.toString();
+}
+
+function renderQrCodeToCanvas(text, canvas) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  try {
+    const qr = QRCodeGenerator.generateMatrix(text);
+    const count = qr.getModuleCount();
+    const size = canvas.width;
+    const padding = 12;
+    const cellSize = (size - padding * 2) / count;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.fillStyle = '#0b0f19';
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect(padding + c * cellSize, padding + r * cellSize, cellSize + 0.5, cellSize + 0.5);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('QR draw error', e);
+  }
+}
+
+function drawVipCardCanvas(dns, canvas) {
+  if (!canvas || !dns) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Background Gradient
+  const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+  bgGrad.addColorStop(0, '#0a0e17');
+  bgGrad.addColorStop(0.5, '#0f172a');
+  bgGrad.addColorStop(1, '#05070d');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Mesh & Glow accents
+  ctx.save();
+  const radGlow = ctx.createRadialGradient(80, 80, 10, 80, 80, 200);
+  radGlow.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
+  radGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = radGlow;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+
+  // Outer Border & Glass frame
+  ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(10, 10, w - 20, h - 20);
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(16, 16, w - 32, h - 32);
+
+  // Top SFDNS Header
+  ctx.fillStyle = '#06b6d4';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('⚡ SFDNS PRO', 30, 48);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('CYBER GAMING & ANTI-SANCTION', 160, 48);
+
+  // VIP Badge
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(w - 140, 32, 100, 24);
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('👑 VIP CARD', w - 90, 48);
+  ctx.textAlign = 'left';
+
+  // Server Name
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px sans-serif';
+  const title = dns.fa || dns.name;
+  ctx.fillText(title.length > 25 ? title.substring(0, 25) + '...' : title, 30, 95);
+
+  // Tag Badge
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+  ctx.fillRect(30, 110, 160, 24);
+  ctx.strokeStyle = '#10b981';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(30, 110, 160, 24);
+  ctx.fillStyle = '#10b981';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('🛡️ ' + (dns.tag || 'VIP Gaming'), 38, 126);
+
+  // IPs Monospace
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = 'bold 12px monospace';
+  ctx.fillText('Primary IPv4   : ' + dns.p, 30, 165);
+  ctx.fillText('Secondary IPv4 : ' + dns.s, 30, 190);
+  if (dns.ipv6_p) {
+    ctx.fillStyle = '#06b6d4';
+    ctx.fillText('IPv6 Ready     : ' + dns.ipv6_p.substring(0, 24) + '...', 30, 215);
+  }
+
+  // Ping & Stability Banner
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+  ctx.fillRect(30, 240, 360, 42);
+  ctx.fillStyle = '#10b981';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('⚡ Latency: ' + (dns.ping ? dns.ping + ' ms' : 'Ultra Fast') + ' • 100% Anti-Sanction', 42, 266);
+
+  // Embedded QR Code in bottom-right corner
+  try {
+    const qrUri = buildSmartDnsUri(dns);
+    const qr = QRCodeGenerator.generateMatrix(qrUri);
+    const count = qr.getModuleCount();
+    const qrBoxSize = 110;
+    const qrX = w - 145;
+    const qrY = 140;
+    const cell = qrBoxSize / count;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(qrX - 6, qrY - 6, qrBoxSize + 12, qrBoxSize + 12);
+
+    ctx.fillStyle = '#0b0f19';
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect(qrX + c * cell, qrY + r * cell, cell + 0.3, cell + 0.3);
+        }
+      }
+    }
+
+    ctx.fillStyle = '#06b6d4';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan with SFDNS', qrX + qrBoxSize / 2, qrY + qrBoxSize + 18);
+    ctx.textAlign = 'left';
+  } catch (e) {
+    console.error('Embedded QR error', e);
+  }
+
+  // Watermark Footer
+  ctx.fillStyle = '#64748b';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('SFDNS Cyber Edition • t.me/sfdnsapp', 30, 325);
+}
+
+function openShareModal(index, event) {
+  if (event) event.stopPropagation();
+  
+  if (index !== undefined && dnsServers[index]) {
+    activeShareDns = dnsServers[index];
+  } else if (selectedDNS) {
+    activeShareDns = selectedDNS;
+  } else {
+    activeShareDns = dnsServers[0];
+  }
+
+  // Populate share select
+  const select = document.getElementById('shareDnsSelect');
+  if (select) {
+    select.innerHTML = dnsServers.map((d, i) => `
+      <option value="${i}" ${d === activeShareDns ? 'selected' : ''}>
+        ${currentLang === 'fa' ? (d.fa || d.name) : d.name}
+      </option>
+    `).join('');
+  }
+
+  renderShareContent();
+  document.getElementById('shareModalOverlay')?.classList.add('open');
+  document.getElementById('shareModal')?.classList.add('open');
+}
+
+function closeShareModal() {
+  document.getElementById('shareModalOverlay')?.classList.remove('open');
+  document.getElementById('shareModal')?.classList.remove('open');
+}
+
+function onShareDnsSelectChange() {
+  const select = document.getElementById('shareDnsSelect');
+  if (select) {
+    const idx = parseInt(select.value);
+    if (dnsServers[idx]) {
+      activeShareDns = dnsServers[idx];
+      renderShareContent();
+    }
+  }
+}
+
+function switchShareTab(tab) {
+  currentShareTab = tab;
+  document.getElementById('shareTabBtnCard')?.classList.toggle('active', tab === 'card');
+  document.getElementById('shareTabBtnQr')?.classList.toggle('active', tab === 'qr');
+  document.getElementById('shareTabBtnImport')?.classList.toggle('active', tab === 'import');
+
+  document.getElementById('shareTabCardContent').style.display = tab === 'card' ? 'block' : 'none';
+  document.getElementById('shareTabQrContent').style.display = tab === 'qr' ? 'block' : 'none';
+  document.getElementById('shareTabImportContent').style.display = tab === 'import' ? 'block' : 'none';
+
+  if (tab === 'card' || tab === 'qr') {
+    renderShareContent();
+  }
+}
+
+function renderShareContent() {
+  if (!activeShareDns) return;
+  const uri = buildSmartDnsUri(activeShareDns);
+
+  // VIP Canvas
+  const vipCanvas = document.getElementById('vipCardCanvas');
+  if (vipCanvas) {
+    drawVipCardCanvas(activeShareDns, vipCanvas);
+  }
+
+  // QR Canvas
+  const qrCanvas = document.getElementById('qrCodeCanvas');
+  if (qrCanvas) {
+    renderQrCodeToCanvas(uri, qrCanvas);
+  }
+
+  // Text display
+  const linkDisplay = document.getElementById('smartLinkTextDisplay');
+  if (linkDisplay) {
+    linkDisplay.textContent = uri;
+  }
+}
+
+function shareVipCardNative() {
+  const canvas = document.getElementById('vipCardCanvas');
+  if (!canvas || !activeShareDns) return;
+
+  const base64 = canvas.toDataURL('image/png');
+  const title = `SFDNS VIP: ${activeShareDns.fa || activeShareDns.name}`;
+  const text = `🔥 کانفیگ اختصاصی دی‌ان‌اس ${activeShareDns.fa || activeShareDns.name}\n` +
+               `🔹 دی‌ان‌اس اول: ${activeShareDns.p}\n` +
+               `🔹 دی‌ان‌اس دوم: ${activeShareDns.s}\n` +
+               `🚀 لینک اتصال سریع: ${buildSmartDnsUri(activeShareDns)}\n` +
+               `دانلود برنامه SFDNS Pro: https://t.me/sfdnsapp`;
+
+  if (window.AndroidBridge && typeof window.AndroidBridge.shareImageCard === 'function') {
+    window.AndroidBridge.shareImageCard(base64, title, text);
+  } else if (window.AndroidBridge && typeof window.AndroidBridge.shareText === 'function') {
+    window.AndroidBridge.shareText(title, text);
+  } else {
+    showToast(currentLang === 'fa' ? 'کارت تصویری ایجاد شد!' : 'VIP Card Ready!');
+  }
+}
+
+function copySmartLinkAction() {
+  if (!activeShareDns) return;
+  const uri = buildSmartDnsUri(activeShareDns);
+  if (window.AndroidBridge && typeof window.AndroidBridge.copyToClipboard === 'function') {
+    window.AndroidBridge.copyToClipboard(uri);
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(uri);
+  }
+  showToast(currentLang === 'fa' ? 'لینک هوشمند کپی شد! 📋' : 'Smart link copied! 📋');
+}
+
+function shareLinkTextAction() {
+  if (!activeShareDns) return;
+  const title = `دی‌ان‌اس ${activeShareDns.fa || activeShareDns.name}`;
+  const text = `🔥 کانفیگ هوشمند دی‌ان‌اس ${activeShareDns.fa || activeShareDns.name}\n` +
+               `⚡ آی‌پی‌ها: ${activeShareDns.p} / ${activeShareDns.s}\n` +
+               `🔗 لینک مستقیم SFDNS:\n${buildSmartDnsUri(activeShareDns)}`;
+  if (window.AndroidBridge && typeof window.AndroidBridge.shareText === 'function') {
+    window.AndroidBridge.shareText(title, text);
+  } else {
+    copySmartLinkAction();
+  }
+}
+
+function importFromClipboardAction() {
+  let clip = '';
+  if (window.AndroidBridge && typeof window.AndroidBridge.getClipboardText === 'function') {
+    clip = window.AndroidBridge.getClipboardText() || '';
+  }
+  if (!clip) {
+    showToast(currentLang === 'fa' ? 'متنی در کلیپ‌بورد یافت نشد' : 'No text in clipboard');
+    return;
+  }
+  parseAndImportDnsString(clip);
+}
+
+function parseAndImportDnsString(str) {
+  if (!str) return;
+  try {
+    // If it is sfdns:// URL
+    if (str.startsWith('sfdns://')) {
+      const url = new URL(str.replace('sfdns://', 'http://localhost/'));
+      const name = url.searchParams.get('name') || 'Imported DNS';
+      const fa = url.searchParams.get('fa') || name;
+      const p = url.searchParams.get('p') || '';
+      const s = url.searchParams.get('s') || '';
+      const p6 = url.searchParams.get('p6') || '';
+      const s6 = url.searchParams.get('s6') || '';
+      const tag = url.searchParams.get('tag') || 'Shared DNS';
+
+      if (p && isValidIPv4(p)) {
+        addCustomDnsRecord(name, fa, p, s, p6, s6, tag);
+        return;
+      }
+    }
+
+    // Try regex for two IPv4
+    const ipMatches = str.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g);
+    if (ipMatches && ipMatches.length >= 1) {
+      const p = ipMatches[0];
+      const s = ipMatches[1] || ipMatches[0];
+      addCustomDnsRecord('Imported DNS', 'دی‌ان‌اس وارد شده', p, s, '', '', 'Custom');
+      return;
+    }
+
+    showToast(currentLang === 'fa' ? 'فرمت دی‌ان‌اس شناسایی نشد' : 'Invalid DNS format');
+  } catch (e) {
+    console.error('Import parse error', e);
+    showToast(currentLang === 'fa' ? 'خطا در خواندن کانفیگ' : 'Import error');
+  }
+}
+
+function addCustomDnsRecord(name, fa, p, s, p6, s6, tag) {
+  const newDns = {
+    name: name,
+    fa: fa || name,
+    tag: tag || 'اختصاصی',
+    tagEn: tag || 'Custom',
+    cls: 'game',
+    p: p,
+    s: s || p,
+    ipv6_p: p6 || '',
+    ipv6_s: s6 || '',
+    isCustom: true
+  };
+  dnsServers.unshift(newDns);
+  saveCustomDnsServers();
+  renderDnsList();
+  selectDNS(0);
+  closeShareModal();
+  showToast(currentLang === 'fa' ? `دی‌ان‌اس "${fa}" با موفقیت اضافه شد! 🎉` : `DNS "${name}" added! 🎉`);
+}
+
+function exportAllDnsJson() {
+  const customList = dnsServers.filter(d => d.isCustom);
+  const data = JSON.stringify(customList.length > 0 ? customList : dnsServers, null, 2);
+  if (window.AndroidBridge && typeof window.AndroidBridge.copyToClipboard === 'function') {
+    window.AndroidBridge.copyToClipboard(data);
+  }
+  showToast(currentLang === 'fa' ? 'کد JSON بکاپ در کلیپ‌بورد کپی شد! 📋' : 'Backup JSON copied to clipboard! 📋');
+}
+
+function promptImportDnsJson() {
+  let clip = '';
+  if (window.AndroidBridge && typeof window.AndroidBridge.getClipboardText === 'function') {
+    clip = window.AndroidBridge.getClipboardText();
+  }
+  if (!clip || !clip.startsWith('[')) {
+    showToast(currentLang === 'fa' ? 'ابتدا متن JSON بکاپ را کپی کنید' : 'Copy JSON backup first');
+    return;
+  }
+  try {
+    const list = JSON.parse(clip);
+    if (Array.isArray(list) && list.length > 0) {
+      list.forEach(item => {
+        if (item.p && isValidIPv4(item.p)) {
+          item.isCustom = true;
+          dnsServers.unshift(item);
+        }
+      });
+      saveCustomDnsServers();
+      renderDnsList();
+      showToast(currentLang === 'fa' ? `${list.length} سرور با موفقیت اضافه شد!` : `${list.length} servers imported!`);
+    }
+  } catch (e) {
+    showToast(currentLang === 'fa' ? 'فرمت JSON نامعتبر است' : 'Invalid JSON');
+  }
+}
+
+// DeepLink Handler invoked from Android Native
+window.handleDeepLink = function(url) {
+  if (!url) return;
+  parseAndImportDnsString(url);
+};
+
+// Clipboard Auto-Detection Banner
+function checkClipboardOnResume() {
+  try {
+    if (window.AndroidBridge && typeof window.AndroidBridge.getClipboardText === 'function') {
+      const clip = window.AndroidBridge.getClipboardText();
+      if (clip && (clip.startsWith('sfdns://') || (clip.includes('DNS') && clip.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/)))) {
+        detectedClipboardDnsCandidate = clip;
+        const banner = document.getElementById('clipboardDetectedBanner');
+        const nameEl = document.getElementById('clipboardDetectedName');
+        if (banner && nameEl) {
+          nameEl.textContent = clip.length > 40 ? clip.substring(0, 40) + '...' : clip;
+          banner.style.display = 'flex';
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Clipboard check failed', e);
+  }
+}
+
+function applyDetectedClipboardDns() {
+  if (detectedClipboardDnsCandidate) {
+    parseAndImportDnsString(detectedClipboardDnsCandidate);
+    dismissClipboardBanner();
+  }
+}
+
+function dismissClipboardBanner() {
+  const banner = document.getElementById('clipboardDetectedBanner');
+  if (banner) banner.style.display = 'none';
+  detectedClipboardDnsCandidate = null;
+}
+
+/* ==========================================================================
+   FEATURE 4: LIVE DNS RADAR ARENA & ISP BENCHMARK
+   ========================================================================== */
+let radarAnimationId = null;
+let radarAngle = 0;
+let radarWinners = [];
+
+function openRadarModal() {
+  document.getElementById('radarModalOverlay')?.classList.add('open');
+  document.getElementById('radarModal')?.classList.add('open');
+
+  // Detect Operator
+  const opEl = document.getElementById('radarOperatorText');
+  if (opEl && window.AndroidBridge && typeof window.AndroidBridge.getNetworkOperatorInfo === 'function') {
+    try {
+      const opInfo = JSON.parse(window.AndroidBridge.getNetworkOperatorInfo());
+      const carrier = opInfo.carrier || 'Mobile / Wi-Fi';
+      const netType = opInfo.networkType || '4G/5G';
+      opEl.textContent = currentLang === 'fa' ? `📡 اپراتور: ${carrier} (${netType})` : `📡 Carrier: ${carrier} (${netType})`;
+    } catch (e) {
+      opEl.textContent = currentLang === 'fa' ? '📡 شبکه: متصل به اینترنت' : '📡 Network: Connected';
+    }
+  }
+
+  drawRadarHUD();
+}
+
+function closeRadarModal() {
+  document.getElementById('radarModalOverlay')?.classList.remove('open');
+  document.getElementById('radarModal')?.classList.remove('open');
+  if (radarAnimationId) {
+    cancelAnimationFrame(radarAnimationId);
+    radarAnimationId = null;
+  }
+}
+
+function drawRadarHUD() {
+  const canvas = document.getElementById('radarCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const center = size / 2;
+
+  function renderFrame() {
+    ctx.clearRect(0, 0, size, size);
+
+    // Concentric rings
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+    ctx.lineWidth = 1;
+    for (let r = 20; r <= center - 10; r += 20) {
+      ctx.beginPath();
+      ctx.arc(center, center, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Crosshairs
+    ctx.beginPath();
+    ctx.moveTo(center, 0);
+    ctx.lineTo(center, size);
+    ctx.moveTo(0, center);
+    ctx.lineTo(size, center);
+    ctx.stroke();
+
+    // Rotating Sweep Beam
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate(radarAngle);
+    const sweepGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, center - 10);
+    sweepGrad.addColorStop(0, 'rgba(16, 185, 129, 0.6)');
+    sweepGrad.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+    ctx.fillStyle = sweepGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, center - 10, 0, Math.PI / 3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    radarAngle += 0.05;
+    radarAnimationId = requestAnimationFrame(renderFrame);
+  }
+
+  if (!radarAnimationId) {
+    renderFrame();
+  }
+}
+
+async function startRadarBenchmark() {
+  const startBtn = document.getElementById('btnStartRadarArena');
+  const connectBtn = document.getElementById('btnConnectWinner');
+  const countEl = document.getElementById('radarTestedCount');
+  const listEl = document.getElementById('radarLeaderboardList');
+
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.textContent = currentLang === 'fa' ? '⏳ در حال پایش همزمان...' : '⏳ Benchmarking...';
+  }
+
+  const results = [];
+  let completed = 0;
+  const total = dnsServers.length;
+
+  const promises = dnsServers.map(async (dns, idx) => {
+    let ping = 999;
+    if (window.AndroidBridge && typeof window.AndroidBridge.pingIpDirect === 'function') {
+      try {
+        ping = await new Promise(resolve => {
+          setTimeout(() => {
+            const p = window.AndroidBridge.pingIpDirect(dns.p);
+            resolve(p > 0 ? p : 999);
+          }, idx * 25);
+        });
+      } catch (e) {
+        ping = 999;
+      }
+    } else {
+      ping = Math.floor(Math.random() * 60) + 18;
+    }
+
+    completed++;
+    if (countEl) countEl.textContent = `${completed} / ${total}`;
+    results.push({ dns, idx, ping });
+  });
+
+  await Promise.all(promises);
+
+  // Sort by lowest ping
+  results.sort((a, b) => a.ping - b.ping);
+  radarWinners = results;
+
+  // Render leaderboard
+  if (listEl) {
+    listEl.innerHTML = results.map((res, rank) => {
+      const isWinner = rank === 0;
+      const medal = rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : `#${rank + 1}`;
+      const rankClass = rank === 0 ? 'rank-1' : rank === 1 ? 'rank-2' : rank === 2 ? 'rank-3' : '';
+      return `
+        <div class="radar-leaderboard-card ${rankClass}" onclick="selectAndConnectRadar(${res.idx})">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 16px; font-weight: bold;">${medal}</span>
+            <div>
+              <div style="font-size: 13px; font-weight: bold; color: var(--text);">${currentLang === 'fa' ? (res.dns.fa || res.dns.name) : res.dns.name}</div>
+              <div style="font-size: 10px; font-family: var(--mono); color: var(--text-dim);">${res.dns.p}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px; font-weight: bold; font-family: var(--mono); color: ${res.ping < 60 ? 'var(--neon-green)' : res.ping < 120 ? 'var(--neon-amber)' : 'var(--neon-red)'};">
+              ${res.ping < 900 ? res.ping + ' ms' : 'Timeout'}
+            </span>
+            <button style="background: rgba(16,185,129,0.15); border: 1px solid var(--neon-green); color: var(--neon-green); border-radius: 8px; padding: 4px 8px; font-size: 10px; font-weight: bold; cursor: pointer;">
+              ${currentLang === 'fa' ? 'اتصال' : 'Connect'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  if (startBtn) {
+    startBtn.disabled = false;
+    startBtn.textContent = currentLang === 'fa' ? '🔄 تکرار مسابقه' : '🔄 Retest';
+  }
+  if (connectBtn) {
+    connectBtn.style.display = 'block';
+  }
+}
+
+function connectRadarWinner() {
+  if (radarWinners.length > 0) {
+    selectAndConnectRadar(radarWinners[0].idx);
+  }
+}
+
+function selectAndConnectRadar(index) {
+  selectDNS(index);
+  closeRadarModal();
+  if (!connected) {
+    toggleConnect();
+  }
+  showToast(currentLang === 'fa' ? `متصل به سریع‌ترین سرور: ${dnsServers[index].fa || dnsServers[index].name} 🚀` : `Connected to fastest server: ${dnsServers[index].name} 🚀`);
+}
+
+/* ==========================================================================
+   FEATURE 3: SMART GAME HUB & AUTO LAUNCHER
+   ========================================================================== */
+const popularGamesCatalog = [
+  { id: 'pubg', name: 'PUBG Mobile', fa: 'پابجی موبایل', icon: '🪖', pkg: 'com.tencent.ig', altPkgs: ['com.pubg.krmobile', 'com.vng.pubgmobile'], dnsName: 'PUBG Fast 2 (Gaming)' },
+  { id: 'cod', name: 'Call of Duty Warzone', fa: 'کالاف دیوتی وارزون', icon: '💥', pkg: 'com.activision.callofduty.warzone', altPkgs: ['com.activision.callofduty.shooter'], dnsName: 'Radar Game (Gaming)' },
+  { id: 'brawl', name: 'Brawl Stars', fa: 'براول استارز', icon: '⭐', pkg: 'com.supercell.brawlstars', altPkgs: [], dnsName: 'Clash Royale Boost' },
+  { id: 'clash', name: 'Clash of Clans', fa: 'کلش آف کلنز', icon: '👑', pkg: 'com.supercell.clashofclans', altPkgs: ['com.supercell.clashroyale'], dnsName: 'Clash Royale Boost' },
+  { id: 'fc', name: 'EA Sports FC Mobile', fa: 'اف سی موبایل (FIFA)', icon: '⚽', pkg: 'com.ea.gp.fifamobile', altPkgs: [], dnsName: 'Electro (Gaming)' },
+  { id: 'freefire', name: 'Free Fire MAX', fa: 'فری فایر مکس', icon: '🔫', pkg: 'com.dts.freefiremax', altPkgs: ['com.dts.freefireth'], dnsName: 'Shatel (Gaming)' },
+  { id: 'roblox', name: 'Roblox', fa: 'روبلاکس', icon: '🧱', pkg: 'com.roblox.client', altPkgs: [], dnsName: 'Level3 (Public)' },
+  { id: 'minecraft', name: 'Minecraft', fa: 'ماینکرفت', icon: '⛏️', pkg: 'com.mojang.minecraftpe', altPkgs: [], dnsName: 'Electro (Gaming)' }
+];
+
+let installedPackageSet = new Set();
+
+function openGameHubModal() {
+  document.getElementById('gameHubModalOverlay')?.classList.add('open');
+  document.getElementById('gameHubModal')?.classList.add('open');
+
+  // Query installed apps
+  installedPackageSet.clear();
+  if (window.AndroidBridge && typeof window.AndroidBridge.getInstalledApps === 'function') {
+    try {
+      const apps = JSON.parse(window.AndroidBridge.getInstalledApps());
+      if (Array.isArray(apps)) {
+        apps.forEach(a => {
+          if (a.packageName) installedPackageSet.add(a.packageName);
+          if (a.package) installedPackageSet.add(a.package);
+        });
+      }
+    } catch (e) {
+      console.warn('Get installed apps error', e);
+    }
+  }
+
+  renderGameHubGrid();
+}
+
+function closeGameHubModal() {
+  document.getElementById('gameHubModalOverlay')?.classList.remove('open');
+  document.getElementById('gameHubModal')?.classList.remove('open');
+}
+
+function renderGameHubGrid() {
+  const grid = document.getElementById('gameHubGrid');
+  if (!grid) return;
+
+  grid.innerHTML = popularGamesCatalog.map(game => {
+    const isInstalled = installedPackageSet.has(game.pkg) || (game.altPkgs && game.altPkgs.some(p => installedPackageSet.has(p)));
+    return `
+      <div class="game-hub-card ${isInstalled ? 'installed' : ''}" onclick="launchGameBoost('${game.id}')">
+        ${isInstalled ? `<div class="game-installed-badge">${currentLang === 'fa' ? '✅ نصب است' : '✅ Installed'}</div>` : ''}
+        <div style="font-size: 28px; margin-top: 4px;">${game.icon}</div>
+        <div style="font-size: 13px; font-weight: bold; color: var(--text);">${currentLang === 'fa' ? game.fa : game.name}</div>
+        <div style="font-size: 10px; color: var(--neon-cyan); font-family: var(--mono);">${game.dnsName}</div>
+        <button style="margin-top: 6px; width: 100%; padding: 8px; border-radius: 10px; border: none; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; font-family: var(--vazir); font-size: 11px; font-weight: bold; cursor: pointer;">
+          🚀 ${currentLang === 'fa' ? 'بوست و اجرا' : 'Boost & Play'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function launchGameBoost(gameId) {
+  const game = popularGamesCatalog.find(g => g.id === gameId);
+  if (!game) return;
+
+  // Find matching DNS
+  const targetDnsIdx = dnsServers.findIndex(d => d.name === game.dnsName || (d.fa && d.fa.includes(game.dnsName)));
+  if (targetDnsIdx >= 0) {
+    selectDNS(targetDnsIdx);
+  }
+
+  // Connect VPN if not connected
+  if (!isConnected) {
+    toggleConnect();
+  }
+
+  closeGameHubModal();
+  showToast(currentLang === 'fa' ? `در حال بوست دی‌ان‌اس و اجرای ${game.fa}... 🚀` : `Boosting DNS & launching ${game.name}... 🚀`);
+
+  // Launch package via Android Bridge
+  setTimeout(() => {
+    if (window.AndroidBridge && typeof window.AndroidBridge.launchApp === 'function') {
+      const pkgToLaunch = installedPackageSet.has(game.pkg) ? game.pkg : (game.altPkgs.find(p => installedPackageSet.has(p)) || game.pkg);
+      window.AndroidBridge.launchApp(pkgToLaunch);
+    }
+  }, 1000);
+}
+
 function runInit() {
   try {
     init();
@@ -4617,6 +6194,19 @@ function runInit() {
         splash.classList.add('fade-out');
       }
     }, 650);
+
+    // Check clipboard for shared DNS configs on launch
+    setTimeout(checkClipboardOnResume, 1200);
+
+    // Check on resume / window focus
+    window.addEventListener('focus', () => {
+      setTimeout(checkClipboardOnResume, 600);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        setTimeout(checkClipboardOnResume, 600);
+      }
+    });
   } catch (e) {
     console.error("Initialization failed", e);
   }

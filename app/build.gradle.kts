@@ -77,17 +77,10 @@ secrets {
 
 googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN }
 
-// Some unused dependencies are commented out below instead of being removed.
-// This makes it easy to add them back in the future if needed.
+// Active project dependencies
 dependencies {
   implementation(platform(libs.androidx.compose.bom))
-  // implementation(platform(libs.firebase.bom))
-  // implementation(libs.accompanist.permissions)
   implementation(libs.androidx.activity.compose)
-  // implementation(libs.androidx.camera.camera2)
-  // implementation(libs.androidx.camera.core)
-  // implementation(libs.androidx.camera.lifecycle)
-  // implementation(libs.androidx.camera.view)
   implementation(libs.androidx.compose.material.icons.core)
   implementation(libs.androidx.compose.material.icons.extended)
   implementation(libs.androidx.compose.material3)
@@ -96,34 +89,11 @@ dependencies {
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
   implementation("androidx.core:core-splashscreen:1.0.1")
-  // implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
-  // implementation(libs.androidx.navigation.compose)
-  // implementation(libs.androidx.room.ktx)
-  // implementation(libs.androidx.room.runtime)
-  // implementation(libs.coil.compose)
-  // implementation(libs.converter.moshi)
-  // implementation(libs.firebase.ai)
-  // Uncomment to use Firestore:
-  // implementation(libs.firebase.firestore)
-
-  // Firebase Auth with Google Sign-In requires all of the following to be uncommented together.
-  // If you are using Firebase Auth with other providers (e.g. Email/Password), you may only need
-  // firebase-auth.
-  // implementation(libs.firebase.auth)
-  // implementation(libs.androidx.credentials)
-  // implementation(libs.androidx.credentials.play.services)
-  // implementation(libs.googleid)
-  // implementation(libs.firebase.appcheck.recaptcha)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
-  // implementation(libs.logging.interceptor)
-  // implementation(libs.moshi.kotlin)
-  // implementation(libs.okhttp)
-  // implementation(libs.play.services.location)
-  // implementation(libs.retrofit)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
@@ -140,52 +110,6 @@ dependencies {
   androidTestImplementation(libs.androidx.runner)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)
-  // "ksp"(libs.androidx.room.compiler)
-  // "ksp"(libs.moshi.kotlin.codegen)
 }
 
-// abstract class EncryptHtmlAssetTask : DefaultTask() {
-//     @get:InputDirectory
-//     abstract val assetDir: DirectoryProperty
-// 
-//     @get:OutputDirectory
-//     abstract val outputDir: DirectoryProperty
-// 
-//     @TaskAction
-//     fun encrypt() {
-//         val htmlFile = assetDir.get().file("index.html").asFile
-//         if (htmlFile.exists()) {
-//             val htmlBytes = htmlFile.readBytes()
-//             
-//             // GZIP Compress
-//             val baos = ByteArrayOutputStream()
-//             val gzos = GZIPOutputStream(baos)
-//             gzos.write(htmlBytes)
-//             gzos.close()
-//             val compressedBytes = baos.toByteArray()
-//             
-//             // XOR Encrypt
-//             val key = "SFDNS_KEY_2026_PROTECT".toByteArray(Charsets.UTF_8)
-//             val encryptedBytes = ByteArray(compressedBytes.size)
-//             for (i in compressedBytes.indices) {
-//                 val b = compressedBytes[i].toInt()
-//                 val k = key[i % key.size].toInt()
-//                 encryptedBytes[i] = (b xor k).toByte()
-//             }
-//             
-//             val datFile = outputDir.get().file("index.dat").asFile
-//             datFile.writeBytes(encryptedBytes)
-//             println("HTML asset successfully compressed and encrypted to index.dat (${htmlBytes.size} -> ${encryptedBytes.size} bytes)")
-//         }
-//     }
-// }
-// 
-// val encryptHtmlAsset = tasks.register<EncryptHtmlAssetTask>("encryptHtmlAsset") {
-//     assetDir.set(layout.projectDirectory.dir("src/main/assets"))
-//     outputDir.set(layout.projectDirectory.dir("src/main/assets"))
-// }
-// 
-// tasks.matching { it.name.startsWith("merge") && it.name.contains("Assets") }.configureEach {
-//     dependsOn(encryptHtmlAsset)
-// }
 

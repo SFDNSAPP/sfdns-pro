@@ -113,6 +113,7 @@ class DnsVpnService : VpnService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 android.net.InetAddresses.isNumericAddress(clean)
             } else {
+                @Suppress("DEPRECATION")
                 android.util.Patterns.IP_ADDRESS.matcher(clean).matches() || (clean.contains(":") && !clean.contains(" "))
             }
         } catch (e: Exception) {
