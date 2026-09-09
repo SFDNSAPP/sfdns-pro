@@ -13,6 +13,7 @@ import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sfdnsapp.pro.DnsVpnService
+import com.sfdnsapp.pro.IpValidator
 import com.sfdnsapp.pro.PrefKeys
 import com.sfdnsapp.pro.data.AppInfo
 import com.sfdnsapp.pro.data.DnsRepository
@@ -33,7 +34,7 @@ import org.json.JSONObject
 data class UiMetrics(
     val ping: String = "—",
     val downloadSpeed: String = "0 Q/s",
-    val uploadSpeed: String = "ACTIVE",
+    val uploadSpeed: String = "—",
     val durationFormatted: String = "00:00:00"
 )
 
@@ -43,11 +44,13 @@ data class AppSettings(
     val isIpv6Enabled: Boolean = false,
     val isAntiDpiEnabled: Boolean = false,
     val isAutoReconnect: Boolean = true,
+    val isAutoConnectEnabled: Boolean = true,
     val isNotificationEnabled: Boolean = true,
     val isKillSwitchEnabled: Boolean = false,
     val carrierOpt: String = "auto", // "auto", "mci", "mtn", "wifi"
     val isSplitTunnelEnabled: Boolean = false,
-    val splitTunnelMode: String = "disallowed" // "allowed", "disallowed"
+    val splitTunnelMode: String = "disallowed", // "allowed", "disallowed"
+    val isWidgetAutoSelectEnabled: Boolean = false
 )
 
 class DnsViewModel(application: Application) : AndroidViewModel(application) {
@@ -107,12 +110,14 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         val doh = prefs.getSafeBoolean(PrefKeys.KEY_DOH_ENABLED, false)
         val ipv6 = prefs.getSafeBoolean(PrefKeys.KEY_IPV6_ENABLED, false)
         val antiDpi = prefs.getSafeBoolean(PrefKeys.KEY_ANTI_DPI_ENABLED, false)
-        val autoRec = prefs.getSafeBoolean(PrefKeys.KEY_AUTO_RECONNECT, true)
+        val autoConnect = prefs.getSafeBoolean(PrefKeys.KEY_AUTO_CONNECT, true)
+        val autoRec = prefs.getSafeBoolean(PrefKeys.KEY_AUTO_RECONNECT, autoConnect)
         val notif = prefs.getSafeBoolean(PrefKeys.KEY_NOTIFICATION_ENABLED, true)
         val killSwitch = prefs.getSafeBoolean(PrefKeys.KEY_KILL_SWITCH, false)
         val carrierOpt = prefs.getSafeString(PrefKeys.KEY_CARRIER_OPT, "auto")
         val splitEnabled = prefs.getSafeBoolean(PrefKeys.KEY_SPLIT_TUNNEL_ENABLED, false)
         val splitMode = prefs.getSafeString(PrefKeys.KEY_SPLIT_TUNNEL_MODE, "disallowed")
+        val widgetAutoSelect = prefs.getSafeBoolean(PrefKeys.KEY_WIDGET_AUTO_SELECT, false)
 
         _settings.value = AppSettings(
             language = lang,
@@ -120,11 +125,13 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             isIpv6Enabled = ipv6,
             isAntiDpiEnabled = antiDpi,
             isAutoReconnect = autoRec,
+            isAutoConnectEnabled = autoConnect,
             isNotificationEnabled = notif,
             isKillSwitchEnabled = killSwitch,
             carrierOpt = carrierOpt,
             isSplitTunnelEnabled = splitEnabled,
-            splitTunnelMode = splitMode
+            splitTunnelMode = splitMode,
+            isWidgetAutoSelectEnabled = widgetAutoSelect
         )
 
         // Load custom DNS list
@@ -274,14 +281,24 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun addCustomDns(name: String, primary: String, secondary: String, primaryV6: String = "", secondaryV6: String = ""): Boolean {
         if (name.isBlank() || primary.isBlank()) return false
+        val cleanPrimary = primary.trim()
+        val cleanSecondary = secondary.trim()
+        val cleanPrimaryV6 = primaryV6.trim()
+        val cleanSecondaryV6 = secondaryV6.trim()
+
+        if (!IpValidator.isValidIp(cleanPrimary)) return false
+        if (cleanSecondary.isNotEmpty() && !IpValidator.isValidIp(cleanSecondary)) return false
+        if (cleanPrimaryV6.isNotEmpty() && !IpValidator.isValidIpv6(cleanPrimaryV6)) return false
+        if (cleanSecondaryV6.isNotEmpty() && !IpValidator.isValidIpv6(cleanSecondaryV6)) return false
+
         val newServer = DnsServer(
             id = "custom_${System.currentTimeMillis()}",
             name = name.trim(),
             faName = name.trim(),
-            primary = primary.trim(),
-            secondary = secondary.trim(),
-            primaryV6 = primaryV6.trim(),
-            secondaryV6 = secondaryV6.trim(),
+            primary = cleanPrimary,
+            secondary = cleanSecondary,
+            primaryV6 = cleanPrimaryV6,
+            secondaryV6 = cleanSecondaryV6,
             isCustom = true,
             category = "custom"
         )
@@ -338,14 +355,29 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         prefs.edit().putBoolean(PrefKeys.KEY_ANTI_DPI_ENABLED, enabled).apply()
     }
 
+    fun toggleAutoConnect(enabled: Boolean) {
+        _settings.value = _settings.value.copy(
+            isAutoConnectEnabled = enabled,
+            isAutoReconnect = enabled
+        )
+        prefs.edit()
+            .putBoolean(PrefKeys.KEY_AUTO_CONNECT, enabled)
+            .putBoolean(PrefKeys.KEY_AUTO_RECONNECT, enabled)
+            .apply()
+    }
+
     fun toggleAutoReconnect(enabled: Boolean) {
-        _settings.value = _settings.value.copy(isAutoReconnect = enabled)
-        prefs.edit().putBoolean(PrefKeys.KEY_AUTO_RECONNECT, enabled).apply()
+        toggleAutoConnect(enabled)
     }
 
     fun toggleKillSwitch(enabled: Boolean) {
         _settings.value = _settings.value.copy(isKillSwitchEnabled = enabled)
         prefs.edit().putBoolean(PrefKeys.KEY_KILL_SWITCH, enabled).apply()
+    }
+
+    fun toggleWidgetAutoSelect(enabled: Boolean) {
+        _settings.value = _settings.value.copy(isWidgetAutoSelectEnabled = enabled)
+        prefs.edit().putBoolean(PrefKeys.KEY_WIDGET_AUTO_SELECT, enabled).apply()
     }
 
     fun setCarrierOpt(carrier: String) {
@@ -477,14 +509,12 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
                 // Accurate active ping from cache, or "—" if not pinged yet (never hardcoded 18ms)
                 val currentPingVal = _pingMap.value[_selectedDns.value.id]
                 val pingStr = if (currentPingVal != null && currentPingVal > 0) "${currentPingVal}ms" else "—"
-
-                val isDoh = _settings.value.isDohEnabled
-                val tunnelLabel = if (isDoh) "DoH SECURE" else "DNS SECURE"
+                val uploadMetric = if (currentQueries > 0) "$currentQueries Total" else "—"
 
                 _metrics.value = UiMetrics(
                     ping = pingStr,
                     downloadSpeed = "$qps Q/s",
-                    uploadSpeed = tunnelLabel,
+                    uploadSpeed = uploadMetric,
                     durationFormatted = durationFormatted
                 )
 

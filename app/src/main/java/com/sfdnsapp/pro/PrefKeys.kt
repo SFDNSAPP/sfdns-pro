@@ -26,6 +26,7 @@ object PrefKeys {
     const val KEY_NOTIFICATION_ENABLED = "notification_enabled"
     const val KEY_LANGUAGE = "language"
     const val KEY_CARRIER_OPT = "carrier_opt"            // "auto" | "mci" | "mtn" | "wifi"
+    const val KEY_WIDGET_AUTO_SELECT = "widget_auto_select" // Smart auto-select fastest server on widget tap
 
     // Split Tunnel
     const val KEY_SPLIT_TUNNEL_ENABLED = "split_tunnel_enabled"

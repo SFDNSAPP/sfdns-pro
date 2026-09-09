@@ -65,7 +65,8 @@ fun SettingsDialog(
     onToggleDoh: (Boolean) -> Unit,
     onToggleIpv6: (Boolean) -> Unit,
     onToggleAntiDpi: (Boolean) -> Unit,
-    onToggleAutoReconnect: (Boolean) -> Unit,
+    onToggleAutoReconnect: (Boolean) -> Unit = {},
+    onToggleAutoConnect: (Boolean) -> Unit = onToggleAutoReconnect,
     onToggleKillSwitch: (Boolean) -> Unit = {},
     onSelectCarrier: (String) -> Unit = {},
     onSelectLanguage: (String) -> Unit,
@@ -302,13 +303,13 @@ fun SettingsDialog(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Auto Reconnect
+            // Auto Reconnect & Boot Auto Connect
             SettingToggleCard(
                 icon = Icons.Default.Refresh,
-                title = if (isPersian) "اتصال خودکار پس از قطعی اینترنت" else "Auto Reconnect on Network Change",
-                description = if (isPersian) "برقراری مجدد اتصال هنگام تغییر وای‌فای یا دیتا" else "Reconnect automatically when network switches",
-                isChecked = settings.isAutoReconnect,
-                onCheckedChange = onToggleAutoReconnect
+                title = if (isPersian) "اتصال خودکار (روشن شدن گوشی و تغییر اینترنت)" else "Auto-Connect on Boot & Network Change",
+                description = if (isPersian) "شروع خودکار پس از بوت دستگاه و اتصال مجدد پس از قطعی اینترنت" else "Auto-start on device boot and reconnect on network switches",
+                isChecked = settings.isAutoConnectEnabled,
+                onCheckedChange = onToggleAutoConnect
             )
 
             Spacer(modifier = Modifier.height(12.dp))

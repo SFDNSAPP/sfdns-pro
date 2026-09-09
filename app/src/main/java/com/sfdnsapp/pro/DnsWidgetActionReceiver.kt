@@ -8,6 +8,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
+import com.sfdnsapp.pro.data.DnsRepository
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.Executors
@@ -24,16 +28,16 @@ class DnsWidgetActionReceiver : BroadcastReceiver() {
     )
 
     companion object {
-        private val DNS_CANDIDATES = listOf(
-            WidgetDnsCandidate("Electro (Gaming)", "78.157.42.100", "78.157.42.101"),
-            WidgetDnsCandidate("Shecan (Bypass)", "185.51.200.2", "178.22.122.100"),
-            WidgetDnsCandidate("Radar Game (Gaming)", "10.202.10.11", "10.202.10.10"),
-            WidgetDnsCandidate("PUBG Fast 2 (Gaming)", "50.3.121.54", "78.157.42.101"),
-            WidgetDnsCandidate("403 Online (Bypass)", "10.202.10.202", "10.202.10.102"),
-            WidgetDnsCandidate("Cloudflare (Public)", "1.1.1.1", "1.0.0.1"),
-            WidgetDnsCandidate("Google (Public)", "8.8.8.8", "8.8.4.4"),
-            WidgetDnsCandidate("Shatel (Gaming)", "85.15.1.15", "85.15.1.14")
-        )
+        // Synced directly with DnsRepository.defaultServers to guarantee consistent IPs and DoH mappings
+        val DNS_CANDIDATES: List<WidgetDnsCandidate> = DnsRepository.defaultServers.map { server ->
+            WidgetDnsCandidate(
+                name = server.name,
+                primary = server.primary,
+                secondary = server.secondary,
+                ipv6Primary = server.primaryV6,
+                ipv6Secondary = server.secondaryV6
+            )
+        }
 
         private fun pingIp(ip: String, timeoutMs: Int = 500): Long {
             val start = System.nanoTime()
@@ -66,69 +70,84 @@ class DnsWidgetActionReceiver : BroadcastReceiver() {
                 }
                 DnsWidgetHelper.updateAllWidgets(context)
             } else {
-                // Use goAsync to allow quick parallel DNS ping testing before starting VPN
+                // Use goAsync to allow background execution before starting VPN
                 val pendingResult = goAsync()
                 Thread {
                     try {
                         val prefs = context.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+                        val smartAutoSelect = prefs.getSafeBoolean(PrefKeys.KEY_WIDGET_AUTO_SELECT, false)
 
-                        // Run parallel ping scan on candidates to select the absolute fastest server live
-                        var bestCandidate: WidgetDnsCandidate? = null
-                        var bestPing = 9999L
-
-                        val executor = Executors.newFixedThreadPool(DNS_CANDIDATES.size)
-                        val futures = DNS_CANDIDATES.map { candidate ->
-                            executor.submit<Pair<WidgetDnsCandidate, Long>> {
-                                val ping = pingIp(candidate.primary)
-                                Pair(candidate, ping)
-                            }
-                        }
-                        executor.shutdown()
-                        try {
-                            executor.awaitTermination(1200, TimeUnit.MILLISECONDS)
-                        } catch (e: Exception) {
-                            // Timeout
-                        }
-
-                        for (future in futures) {
-                            try {
-                                if (future.isDone) {
-                                    val pair = future.get()
-                                    if (pair.second < bestPing) {
-                                        bestPing = pair.second
-                                        bestCandidate = pair.first
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                // Ignore
-                            }
-                        }
-
-                        // Fallback to last saved or default if all candidates timed out
                         val chosenName: String
                         val chosenPrimary: String
                         val chosenSecondary: String
                         val chosenPrimaryIpv6: String
                         val chosenSecondaryIpv6: String
 
-                        if (bestCandidate != null && bestPing < 9999L) {
-                            chosenName = bestCandidate.name
-                            chosenPrimary = bestCandidate.primary
-                            chosenSecondary = bestCandidate.secondary
-                            chosenPrimaryIpv6 = bestCandidate.ipv6Primary
-                            chosenSecondaryIpv6 = bestCandidate.ipv6Secondary
+                        if (smartAutoSelect) {
+                            // Optional Smart Widget Auto-Select: Test fastest server and notify user
+                            var bestCandidate: WidgetDnsCandidate? = null
+                            var bestPing = 9999L
 
-                            prefs.edit().apply {
-                                putString(PrefKeys.KEY_LAST_DNS_NAME, chosenName)
-                                putString(PrefKeys.KEY_LAST_PRIMARY_DNS, chosenPrimary)
-                                putString(PrefKeys.KEY_LAST_SECONDARY_DNS, chosenSecondary)
-                                putString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, chosenPrimaryIpv6)
-                                putString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, chosenSecondaryIpv6)
-                                putString(PrefKeys.KEY_LAST_DNS_PING, "${bestPing}ms")
-                                apply()
+                            val executor = Executors.newFixedThreadPool(DNS_CANDIDATES.size.coerceAtLeast(1))
+                            val futures = DNS_CANDIDATES.map { candidate ->
+                                executor.submit<Pair<WidgetDnsCandidate, Long>> {
+                                    val ping = pingIp(candidate.primary)
+                                    Pair(candidate, ping)
+                                }
+                            }
+                            executor.shutdown()
+                            try {
+                                executor.awaitTermination(1200, TimeUnit.MILLISECONDS)
+                            } catch (e: Exception) {
+                                // Timeout
+                            }
+
+                            for (future in futures) {
+                                try {
+                                    if (future.isDone) {
+                                        val pair = future.get()
+                                        if (pair.second < bestPing) {
+                                            bestPing = pair.second
+                                            bestCandidate = pair.first
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    // Ignore
+                                }
+                            }
+
+                            if (bestCandidate != null && bestPing < 9999L) {
+                                chosenName = bestCandidate.name
+                                chosenPrimary = bestCandidate.primary
+                                chosenSecondary = bestCandidate.secondary
+                                chosenPrimaryIpv6 = bestCandidate.ipv6Primary
+                                chosenSecondaryIpv6 = bestCandidate.ipv6Secondary
+
+                                prefs.edit().apply {
+                                    putString(PrefKeys.KEY_LAST_DNS_NAME, chosenName)
+                                    putString(PrefKeys.KEY_LAST_PRIMARY_DNS, chosenPrimary)
+                                    putString(PrefKeys.KEY_LAST_SECONDARY_DNS, chosenSecondary)
+                                    putString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, chosenPrimaryIpv6)
+                                    putString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, chosenSecondaryIpv6)
+                                    putString(PrefKeys.KEY_LAST_DNS_PING, "${bestPing}ms")
+                                    apply()
+                                }
+
+                                val lang = prefs.getSafeString(PrefKeys.KEY_LANGUAGE, "fa")
+                                val toastMsg = if (lang == "fa") "DNS شما به $chosenName تغییر یافت" else "DNS switched to $chosenName"
+                                Handler(Looper.getMainLooper()).post {
+                                    Toast.makeText(context.applicationContext, toastMsg, Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                chosenName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "Cloudflare")
+                                chosenPrimary = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS, "1.1.1.1")
+                                chosenSecondary = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS, "1.0.0.1")
+                                chosenPrimaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, "")
+                                chosenSecondaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, "")
                             }
                         } else {
-                            chosenName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "Cloudflare (Public)")
+                            // Default: Use user's last selected DNS configuration (like DnsTileService)
+                            chosenName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "Cloudflare")
                             chosenPrimary = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS, "1.1.1.1")
                             chosenSecondary = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS, "1.0.0.1")
                             chosenPrimaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, "")

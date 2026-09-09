@@ -34,13 +34,15 @@ class MainActivity : ComponentActivity() {
         if (result.resultCode == RESULT_OK) {
             startVpnService()
         } else {
-            Log.w("MainActivity", "VPN prepare launcher canceled or failed: ${result.resultCode}")
-            // Fallback attempt
-            try {
-                startVpnService()
-            } catch (e: Exception) {
-                viewModel.setConnectionStatus("disconnected")
+            Log.w("MainActivity", "VPN prepare rejected by user: ${result.resultCode}")
+            viewModel.setConnectionStatus("disconnected")
+            val isPersian = viewModel.settings.value.language != "en"
+            val errorMsg = if (isPersian) {
+                "برای اتصال DNS نیاز به تایید مجوز VPN است. لطفاً دوباره تلاش کنید و اجازه دسترسی VPN را تایید نمایید."
+            } else {
+                "VPN permission is required to connect DNS. Please try again and accept the VPN permission prompt."
             }
+            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -99,8 +101,12 @@ class MainActivity : ComponentActivity() {
         val currentVmState = viewModel.connectionState.value
         if (DnsVpnService.isRunning) {
             viewModel.setConnectionStatus("connected")
-        } else if (currentVmState != "connecting") {
-            viewModel.setConnectionStatus("disconnected")
+        } else {
+            // Ensure UI is not stuck in connecting if VPN permission was dismissed or service failed
+            val needsVpnPrepare = VpnService.prepare(this) != null
+            if (needsVpnPrepare || currentVmState == "connecting") {
+                viewModel.setConnectionStatus("disconnected")
+            }
         }
     }
 

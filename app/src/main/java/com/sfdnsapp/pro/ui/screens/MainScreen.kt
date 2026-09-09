@@ -271,7 +271,7 @@ fun MainScreen(
                         onToggleDoh = { viewModel.toggleDoh(it) },
                         onToggleIpv6 = { viewModel.toggleIpv6(it) },
                         onToggleAntiDpi = { viewModel.toggleAntiDpi(it) },
-                        onToggleAutoReconnect = { viewModel.toggleAutoReconnect(it) },
+                        onToggleAutoConnect = { viewModel.toggleAutoConnect(it) },
                         onToggleKillSwitch = { viewModel.toggleKillSwitch(it) },
                         onSelectCarrier = { viewModel.setCarrierOpt(it) },
                         onSelectLanguage = { viewModel.updateLanguage(it) },

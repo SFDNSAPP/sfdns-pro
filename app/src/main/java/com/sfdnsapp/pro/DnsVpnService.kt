@@ -194,18 +194,7 @@ class DnsVpnService : VpnService() {
     }
 
     private fun isValidIp(ip: String?): Boolean {
-        if (ip.isNullOrBlank()) return false
-        val clean = ip.trim()
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                android.net.InetAddresses.isNumericAddress(clean)
-            } else {
-                @Suppress("DEPRECATION")
-                android.util.Patterns.IP_ADDRESS.matcher(clean).matches() || (clean.contains(":") && !clean.contains(" "))
-            }
-        } catch (e: Exception) {
-            false
-        }
+        return IpValidator.isValidIp(ip)
     }
 
     private fun startVpn(
@@ -425,6 +414,9 @@ class DnsVpnService : VpnService() {
     }
 
     private fun updateNotification(dnsName: String, primaryDns: String, speedInfo: String) {
+        val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, MODE_PRIVATE)
+        val lang = prefs.getSafeString(PrefKeys.KEY_LANGUAGE, "fa")
+
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, notificationIntent,
@@ -440,11 +432,13 @@ class DnsVpnService : VpnService() {
         )
 
         val accentColor = 0xFF10B981.toInt()
-        val titleText = "⚡ SFDNS Pro - تحریم‌شکن فعال"
+        val titleText = NotificationStrings.getTitle(lang)
+        val contentText = NotificationStrings.getContent(lang, dnsName, speedInfo)
+        val disconnectText = NotificationStrings.getDisconnectButton(lang)
 
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(titleText)
-            .setContentText("سرور: $dnsName  |  $speedInfo")
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_lightning)
             .setColor(accentColor)
             .setContentIntent(pendingIntent)
@@ -454,7 +448,7 @@ class DnsVpnService : VpnService() {
             .setUsesChronometer(true)
             .addAction(
                 android.R.drawable.ic_menu_close_clear_cancel,
-                "🔴 قطع اتصال (Disconnect)",
+                disconnectText,
                 stopPendingIntent
             )
             .build()

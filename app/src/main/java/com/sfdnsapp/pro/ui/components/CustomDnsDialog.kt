@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sfdnsapp.pro.IpValidator
 import com.sfdnsapp.pro.ui.theme.CyberBgDarker
 import com.sfdnsapp.pro.ui.theme.CyberCardBorder
 import com.sfdnsapp.pro.ui.theme.NeonCyan
@@ -132,17 +133,37 @@ fun CustomDnsDialog(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            val isPrimaryInvalid = primary.isNotBlank() && !IpValidator.isValidIp(primary)
+            val isSecondaryInvalid = secondary.isNotBlank() && !IpValidator.isValidIp(secondary)
+            val isPrimaryV6Invalid = primaryV6.isNotBlank() && !IpValidator.isValidIpv6(primaryV6)
+
+            val isFormValid = name.isNotBlank() &&
+                    primary.isNotBlank() &&
+                    IpValidator.isValidIp(primary) &&
+                    (secondary.isBlank() || IpValidator.isValidIp(secondary)) &&
+                    (primaryV6.isBlank() || IpValidator.isValidIpv6(primaryV6))
+
             // Primary DNS
             OutlinedTextField(
                 value = primary,
                 onValueChange = { primary = it; errorText = null },
                 label = { Text(if (isPersian) "دی‌ان‌اس اصلی (Primary IPv4)" else "Primary DNS (IPv4)") },
                 placeholder = { Text("1.1.1.1", color = TextDim) },
+                isError = isPrimaryInvalid,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = textFieldColors()
             )
+            if (isPrimaryInvalid) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isPersian) "فرمت آی‌پی نامعتبر است" else "Invalid IP address format",
+                    color = Color(0xFFEF4444),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -152,11 +173,21 @@ fun CustomDnsDialog(
                 onValueChange = { secondary = it },
                 label = { Text(if (isPersian) "دی‌ان‌اس دوم (Secondary IPv4)" else "Secondary DNS (IPv4)") },
                 placeholder = { Text("1.0.0.1", color = TextDim) },
+                isError = isSecondaryInvalid,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = textFieldColors()
             )
+            if (isSecondaryInvalid) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isPersian) "فرمت آی‌پی نامعتبر است" else "Invalid IP address format",
+                    color = Color(0xFFEF4444),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -165,11 +196,21 @@ fun CustomDnsDialog(
                 value = primaryV6,
                 onValueChange = { primaryV6 = it },
                 label = { Text(if (isPersian) "آدرس اختیاری Primary IPv6" else "Primary IPv6 (Optional)") },
+                isError = isPrimaryV6Invalid,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = textFieldColors()
             )
+            if (isPrimaryV6Invalid) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isPersian) "فرمت IPv6 نامعتبر است" else "Invalid IPv6 format",
+                    color = Color(0xFFEF4444),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
             errorText?.let { err ->
                 Spacer(modifier = Modifier.height(6.dp))
@@ -180,24 +221,20 @@ fun CustomDnsDialog(
 
             Button(
                 onClick = {
-                    if (name.isBlank()) {
-                        errorText = if (isPersian) "لطفاً نام سرور را وارد کنید" else "Please enter a server name"
-                        return@Button
-                    }
-                    if (primary.isBlank()) {
-                        errorText = if (isPersian) "لطفاً آی‌پی اصلی را وارد کنید" else "Please enter primary DNS IP"
-                        return@Button
-                    }
+                    if (!isFormValid) return@Button
                     onSave(name, primary, secondary, primaryV6, secondaryV6)
                     onDismiss()
                 },
+                enabled = isFormValid,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = NeonGreen,
-                    contentColor = Color.Black
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF1E2638),
+                    disabledContentColor = TextDim
                 )
             ) {
                 Text(
