@@ -24,16 +24,20 @@ import com.sfdnsapp.pro.service.DnsPingEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
 data class UiMetrics(
     val ping: String = "—",
-    val downloadSpeed: String = "0 Q/s",
+    val downloadSpeed: String = "—",
     val uploadSpeed: String = "—",
     val durationFormatted: String = "00:00:00"
 )
@@ -95,6 +99,12 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _bypassPackages = MutableStateFlow<Set<String>>(emptySet())
     val bypassPackages: StateFlow<Set<String>> = _bypassPackages.asStateFlow()
+
+    // One-shot events asking the Activity to re-establish the VPN tunnel so that
+    // server/setting changes apply immediately while connected. Collected by both
+    // MainActivity (performs the restart) and MainScreen (shows user feedback).
+    private val _restartRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val restartRequests: SharedFlow<Unit> = _restartRequests.asSharedFlow()
 
     private var durationJob: Job? = null
     private var connectionStartTime = 0L
@@ -192,11 +202,38 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setConnectionStatus(status: String) {
+        val wasConnected = _connectionState.value == "connected"
         _connectionState.value = status
         if (status == "connected") {
-            startMetricsLoop()
+            // Don't reset the duration timer on duplicate "connected" broadcasts
+            // (e.g. after an in-place tunnel restart for a server switch).
+            if (!wasConnected) startMetricsLoop()
         } else if (status == "disconnected") {
             stopMetricsLoop()
+        }
+    }
+
+    /**
+     * Re-syncs the selected server with SharedPreferences. Needed when the
+     * Tile/Widget changed the active DNS while the Activity was away.
+     */
+    fun syncSelectedDnsWithPrefs() {
+        val lastDnsName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, _selectedDns.value.name)
+        val matched = _dnsList.value.find {
+            it.name.equals(lastDnsName, ignoreCase = true) || it.faName.contains(lastDnsName)
+        }
+        if (matched != null && matched.id != _selectedDns.value.id) {
+            _selectedDns.value = matched
+        }
+    }
+
+    /**
+     * Emits a tunnel-restart request when the VPN is currently connected, so the
+     * latest server/settings take effect immediately instead of on next connect.
+     */
+    private fun requestRestartIfConnected() {
+        if (_connectionState.value == "connected") {
+            _restartRequests.tryEmit(Unit)
         }
     }
 
@@ -209,12 +246,13 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             .putString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, server.primaryV6)
             .putString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, server.secondaryV6)
             .apply()
+        requestRestartIfConnected()
 
         // Probe latency immediately
         viewModelScope.launch {
             val p = DnsPingEngine.pingDnsIp(server.primary)
             if (p > 0) {
-                _pingMap.value = _pingMap.value + (server.id to p)
+                _pingMap.update { it + (server.id to p) }
                 if (_connectionState.value == "connected") {
                     _metrics.value = _metrics.value.copy(ping = "${p}ms")
                 }
@@ -229,7 +267,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
                 launch {
                     val p = DnsPingEngine.pingDnsIp(server.primary)
                     if (p > 0) {
-                        _pingMap.value = _pingMap.value + (server.id to p)
+                        // update{} is atomic: concurrent probes can't overwrite each other.
+                        _pingMap.update { it + (server.id to p) }
                     }
                 }
             }
@@ -242,7 +281,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
                 launch {
                     val p = DnsPingEngine.pingHost(game.host, game.port)
                     if (p > 0) {
-                        _gamePingMap.value = _gamePingMap.value + (game.id to p)
+                        _gamePingMap.update { it + (game.id to p) }
                     }
                 }
             }
@@ -268,7 +307,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
                     fastestServer = server
                 }
                 if (ping > 0) {
-                    _pingMap.value = _pingMap.value + (server.id to ping)
+                    _pingMap.update { it + (server.id to ping) }
                 }
                 _radarProgress.value = (i + 1).toFloat() / servers.size.toFloat()
                 delay(120)
@@ -343,16 +382,19 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleDoh(enabled: Boolean) {
         _settings.value = _settings.value.copy(isDohEnabled = enabled)
         prefs.edit().putBoolean(PrefKeys.KEY_DOH_ENABLED, enabled).apply()
+        requestRestartIfConnected()
     }
 
     fun toggleIpv6(enabled: Boolean) {
         _settings.value = _settings.value.copy(isIpv6Enabled = enabled)
         prefs.edit().putBoolean(PrefKeys.KEY_IPV6_ENABLED, enabled).apply()
+        requestRestartIfConnected()
     }
 
     fun toggleAntiDpi(enabled: Boolean) {
         _settings.value = _settings.value.copy(isAntiDpiEnabled = enabled)
         prefs.edit().putBoolean(PrefKeys.KEY_ANTI_DPI_ENABLED, enabled).apply()
+        requestRestartIfConnected()
     }
 
     fun toggleAutoConnect(enabled: Boolean) {
@@ -373,6 +415,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleKillSwitch(enabled: Boolean) {
         _settings.value = _settings.value.copy(isKillSwitchEnabled = enabled)
         prefs.edit().putBoolean(PrefKeys.KEY_KILL_SWITCH, enabled).apply()
+        requestRestartIfConnected()
     }
 
     fun toggleWidgetAutoSelect(enabled: Boolean) {
@@ -383,6 +426,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     fun setCarrierOpt(carrier: String) {
         _settings.value = _settings.value.copy(carrierOpt = carrier)
         prefs.edit().putString(PrefKeys.KEY_CARRIER_OPT, carrier).apply()
+        requestRestartIfConnected() // MTU is applied at tunnel establish time
     }
 
     fun setSplitTunnel(enabled: Boolean, mode: String, apps: Set<String>) {
@@ -399,6 +443,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             .putString(PrefKeys.KEY_SPLIT_TUNNEL_APPS, appsStr)
             .putString(PrefKeys.KEY_BYPASS_PACKAGES, arr.toString())
             .apply()
+        requestRestartIfConnected() // split rules are applied at tunnel establish time
     }
 
     fun toggleBypassPackage(pkg: String) {
@@ -418,6 +463,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             .putString(PrefKeys.KEY_SPLIT_TUNNEL_APPS, appsStr)
             .putString(PrefKeys.KEY_BYPASS_PACKAGES, arr.toString())
             .apply()
+        requestRestartIfConnected()
     }
 
     private fun scanInstalledApps() {
@@ -489,6 +535,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         durationJob = viewModelScope.launch {
             var lastQueries = DnsVpnService.dohQueryCounter.get()
             var lastTime = System.currentTimeMillis()
+            var tickCount = 0
 
             while (_connectionState.value == "connected") {
                 val now = System.currentTimeMillis()
@@ -506,17 +553,33 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
                 lastQueries = currentQueries
                 lastTime = now
 
+                // Query counters only advance in DoH mode (plain-DNS answers never
+                // traverse our TUN), so show "—" instead of a misleading "0 Q/s".
+                val dohActive = _settings.value.isDohEnabled || _settings.value.isAntiDpiEnabled
+                val qpsMetric = if (dohActive) "$qps Q/s" else "—"
+                val uploadMetric = if (dohActive && currentQueries > 0) "$currentQueries Total" else "—"
+
                 // Accurate active ping from cache, or "—" if not pinged yet (never hardcoded 18ms)
                 val currentPingVal = _pingMap.value[_selectedDns.value.id]
                 val pingStr = if (currentPingVal != null && currentPingVal > 0) "${currentPingVal}ms" else "—"
-                val uploadMetric = if (currentQueries > 0) "$currentQueries Total" else "—"
 
                 _metrics.value = UiMetrics(
                     ping = pingStr,
-                    downloadSpeed = "$qps Q/s",
+                    downloadSpeed = qpsMetric,
                     uploadSpeed = uploadMetric,
                     durationFormatted = durationFormatted
                 )
+
+                // Refresh the selected server's latency every ~10s so the dashboard
+                // never shows a stale ping while connected.
+                tickCount++
+                if (tickCount % 10 == 0) {
+                    val selected = _selectedDns.value
+                    launch {
+                        val p = DnsPingEngine.pingDnsIp(selected.primary)
+                        if (p > 0) _pingMap.update { it + (selected.id to p) }
+                    }
+                }
 
                 delay(1000)
             }

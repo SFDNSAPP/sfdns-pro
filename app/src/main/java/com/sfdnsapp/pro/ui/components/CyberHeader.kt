@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sfdnsapp.pro.BuildConfig
 import com.sfdnsapp.pro.ui.theme.CyberCardBorder
 import com.sfdnsapp.pro.ui.theme.GoldVip
 import com.sfdnsapp.pro.ui.theme.NeonCyan
@@ -106,7 +107,7 @@ fun CyberHeader(
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    text = if (isPersian) "نسخه سایبر ۲.۵" else "CYBER EDITION v2.5",
+                    text = if (isPersian) "نسخه سایبر ${BuildConfig.VERSION_NAME}" else "CYBER EDITION v${BuildConfig.VERSION_NAME}",
                     color = NeonCyan,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,

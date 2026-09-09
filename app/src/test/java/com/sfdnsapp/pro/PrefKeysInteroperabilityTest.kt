@@ -7,6 +7,7 @@ import com.sfdnsapp.pro.viewmodel.DnsViewModel
 import org.json.JSONArray
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -199,8 +200,8 @@ class PrefKeysInteroperabilityTest {
 
     @Test
     fun `DoH endpoint resolution handles primary secondary and known DNS IPs`() {
-        assertEquals("https://1.1.1.1/dns-query", DnsVpnService.resolveDohEndpointUrl("1.1.1.1"))
-        assertEquals("https://1.1.1.1/dns-query", DnsVpnService.resolveDohEndpointUrl("1.0.0.1"))
+        assertEquals("https://cloudflare-dns.com/dns-query", DnsVpnService.resolveDohEndpointUrl("1.1.1.1"))
+        assertEquals("https://cloudflare-dns.com/dns-query", DnsVpnService.resolveDohEndpointUrl("1.0.0.1"))
         assertEquals("https://dns.google/dns-query", DnsVpnService.resolveDohEndpointUrl("8.8.8.8"))
         assertEquals("https://dns.google/dns-query", DnsVpnService.resolveDohEndpointUrl("8.8.4.4"))
         assertEquals("https://free.shecan.ir/dns-query", DnsVpnService.resolveDohEndpointUrl("178.22.122.100"))
@@ -208,5 +209,16 @@ class PrefKeysInteroperabilityTest {
         assertEquals("https://dns.electro.ir/dns-query", DnsVpnService.resolveDohEndpointUrl("78.157.42.100"))
         assertEquals("https://dns.radar.game/dns-query", DnsVpnService.resolveDohEndpointUrl("10.201.201.201"))
         assertEquals("https://dns.403.online/dns-query", DnsVpnService.resolveDohEndpointUrl("10.202.10.202"))
+        assertEquals("https://doh.opendns.com/dns-query", DnsVpnService.resolveDohEndpointUrl("208.67.222.222"))
+    }
+
+    @Test
+    fun `DoH endpoint resolution returns null for unsupported and custom IPs`() {
+        // Unknown/private IPs must NOT produce a guessed IP-literal URL that would
+        // always fail TLS hostname verification — callers fall back to plain DNS.
+        assertNull(DnsVpnService.resolveDohEndpointUrl("4.2.2.4"))
+        assertNull(DnsVpnService.resolveDohEndpointUrl("192.168.1.1"))
+        assertNull(DnsVpnService.resolveDohEndpointUrl(""))
+        assertNull(DnsVpnService.resolveDohEndpointUrl("not-an-ip"))
     }
 }

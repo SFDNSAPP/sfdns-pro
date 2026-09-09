@@ -3,6 +3,8 @@ package com.sfdnsapp.pro.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -69,6 +71,7 @@ fun CustomDnsDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 28.dp)
         ) {
             // Header
@@ -136,12 +139,14 @@ fun CustomDnsDialog(
             val isPrimaryInvalid = primary.isNotBlank() && !IpValidator.isValidIp(primary)
             val isSecondaryInvalid = secondary.isNotBlank() && !IpValidator.isValidIp(secondary)
             val isPrimaryV6Invalid = primaryV6.isNotBlank() && !IpValidator.isValidIpv6(primaryV6)
+            val isSecondaryV6Invalid = secondaryV6.isNotBlank() && !IpValidator.isValidIpv6(secondaryV6)
 
             val isFormValid = name.isNotBlank() &&
                     primary.isNotBlank() &&
                     IpValidator.isValidIp(primary) &&
                     (secondary.isBlank() || IpValidator.isValidIp(secondary)) &&
-                    (primaryV6.isBlank() || IpValidator.isValidIpv6(primaryV6))
+                    (primaryV6.isBlank() || IpValidator.isValidIpv6(primaryV6)) &&
+                    (secondaryV6.isBlank() || IpValidator.isValidIpv6(secondaryV6))
 
             // Primary DNS
             OutlinedTextField(
@@ -203,6 +208,29 @@ fun CustomDnsDialog(
                 colors = textFieldColors()
             )
             if (isPrimaryV6Invalid) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (isPersian) "فرمت IPv6 نامعتبر است" else "Invalid IPv6 format",
+                    color = Color(0xFFEF4444),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Secondary IPv6 (Optional)
+            OutlinedTextField(
+                value = secondaryV6,
+                onValueChange = { secondaryV6 = it },
+                label = { Text(if (isPersian) "آدرس اختیاری Secondary IPv6" else "Secondary IPv6 (Optional)") },
+                isError = isSecondaryV6Invalid,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = textFieldColors()
+            )
+            if (isSecondaryV6Invalid) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (isPersian) "فرمت IPv6 نامعتبر است" else "Invalid IPv6 format",
