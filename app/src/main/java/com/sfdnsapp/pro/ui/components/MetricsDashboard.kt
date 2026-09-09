@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
@@ -56,7 +56,7 @@ fun MetricsDashboard(
             MetricCard(
                 icon = Icons.Default.Speed,
                 iconTint = NeonCyan,
-                label = if (isPersian) "پینگ زنده" else "LIVE PING",
+                label = if (isPersian) "پینگ سرور" else "PING",
                 value = metrics.ping,
                 modifier = Modifier.weight(1f)
             )
@@ -64,7 +64,7 @@ fun MetricsDashboard(
             MetricCard(
                 icon = Icons.Default.Timer,
                 iconTint = NeonGreen,
-                label = if (isPersian) "مدت اتصال" else "DURATION",
+                label = if (isPersian) "مدت زمان" else "DURATION",
                 value = metrics.durationFormatted,
                 modifier = Modifier.weight(1f)
             )
@@ -75,17 +75,17 @@ fun MetricsDashboard(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             MetricCard(
-                icon = Icons.Default.ArrowDownward,
+                icon = Icons.Default.ElectricBolt,
                 iconTint = Color(0xFF38BDF8),
-                label = if (isPersian) "سرعت دانلود" else "DOWNLOAD",
+                label = if (isPersian) "نرخ پردازش DNS" else "QUERY RATE",
                 value = metrics.downloadSpeed,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
-                icon = Icons.Default.ArrowUpward,
+                icon = Icons.Default.Shield,
                 iconTint = NeonPurple,
-                label = if (isPersian) "سرعت آپلود" else "UPLOAD",
+                label = if (isPersian) "امنیت پروتکل" else "PROTECTION",
                 value = metrics.uploadSpeed,
                 modifier = Modifier.weight(1f)
             )

@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CellTower
+import androidx.compose.material.icons.filled.GppBad
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Refresh
@@ -50,7 +52,6 @@ import com.sfdnsapp.pro.ui.theme.CyberCardBorder
 import com.sfdnsapp.pro.ui.theme.CyberSurface
 import com.sfdnsapp.pro.ui.theme.NeonCyan
 import com.sfdnsapp.pro.ui.theme.NeonGreen
-import com.sfdnsapp.pro.ui.theme.NeonPurple
 import com.sfdnsapp.pro.ui.theme.TextDim
 import com.sfdnsapp.pro.ui.theme.TextPrimary
 import com.sfdnsapp.pro.ui.theme.TextSecondary
@@ -65,6 +66,8 @@ fun SettingsDialog(
     onToggleIpv6: (Boolean) -> Unit,
     onToggleAntiDpi: (Boolean) -> Unit,
     onToggleAutoReconnect: (Boolean) -> Unit,
+    onToggleKillSwitch: (Boolean) -> Unit = {},
+    onSelectCarrier: (String) -> Unit = {},
     onSelectLanguage: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -110,7 +113,7 @@ fun SettingsDialog(
                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = if (isPersian) "پیکربندی امنیت و ارتباط" else "Network & Security Options",
+                            text = if (isPersian) "پیکربندی امنیت، اپراتور و کلید قطع" else "Security, Carrier & Kill Switch Options",
                             color = TextDim,
                             fontSize = 10.5.sp
                         )
@@ -185,6 +188,86 @@ fun SettingsDialog(
             }
 
             Spacer(modifier = Modifier.height(10.dp))
+
+            // Carrier MTU Optimization Card
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(CyberSurface)
+                    .border(1.dp, CyberCardBorder, RoundedCornerShape(14.dp))
+                    .padding(12.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(Icons.Default.CellTower, contentDescription = null, tint = NeonCyan, modifier = Modifier.size(20.dp))
+                        Column {
+                            Text(
+                                text = if (isPersian) "بهینه‌سازی اپراتور و MTU" else "Carrier & MTU Optimization",
+                                color = TextPrimary,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (isPersian) "تنظیم اندازه بسته‌های شبکه بر اساس بستر اینترنت" else "Tune packet sizes for lowest latency",
+                                color = TextDim,
+                                fontSize = 10.5.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    val carrierList = listOf(
+                        "auto" to if (isPersian) "خودکار" else "Auto",
+                        "mci" to if (isPersian) "همراه اول" else "MCI",
+                        "mtn" to if (isPersian) "ایرانسل" else "Irancell",
+                        "wifi" to if (isPersian) "وای‌فای" else "Wi-Fi"
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        carrierList.forEach { (key, label) ->
+                            val isSelected = settings.carrierOpt == key
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) NeonCyan else Color(0xFF141824))
+                                    .border(1.dp, if (isSelected) NeonCyan else CyberCardBorder, RoundedCornerShape(8.dp))
+                                    .clickable { onSelectCarrier(key) }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    color = if (isSelected) Color.Black else TextSecondary,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Kill Switch Toggle
+            SettingToggleCard(
+                icon = Icons.Default.GppBad,
+                title = if (isPersian) "قطع خودکار ترافیک (Kill Switch)" else "Kill Switch Protection",
+                description = if (isPersian) "مسدودسازی نشت ترافیک در صورت قطع اتصال تونل" else "Block unencrypted leaks when connection drops",
+                isChecked = settings.isKillSwitchEnabled,
+                onCheckedChange = onToggleKillSwitch
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // DoH Toggle
             SettingToggleCard(

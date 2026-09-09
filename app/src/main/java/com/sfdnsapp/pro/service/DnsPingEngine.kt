@@ -1,5 +1,9 @@
 package com.sfdnsapp.pro.service
 
+/**
+ * High-performance DNS and host latency measurement engine.
+ * Fixed: Ping cache key isolation using "ip:$ip" and "host:$host:$port" to prevent collision.
+ */
 import com.sfdnsapp.pro.DnsVpnService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,8 +22,9 @@ object DnsPingEngine {
     suspend fun pingDnsIp(ip: String): Int = withContext(Dispatchers.IO) {
         if (ip.isBlank() || ip == "0.0.0.0") return@withContext -1
 
+        val cacheKey = "ip:${ip.trim()}"
         val now = System.currentTimeMillis()
-        val cached = pingCache[ip]
+        val cached = pingCache[cacheKey]
         if (cached != null && (now - cached.first) < CACHE_DURATION_MS && cached.second > 0) {
             return@withContext cached.second
         }
@@ -79,7 +84,7 @@ object DnsPingEngine {
         }
 
         if (bestPing < Int.MAX_VALUE) {
-            pingCache[ip] = Pair(now, bestPing)
+            pingCache[cacheKey] = Pair(now, bestPing)
             return@withContext bestPing
         }
 
@@ -107,14 +112,15 @@ object DnsPingEngine {
         }
 
         if (tcpResult > 0) {
-            pingCache[ip] = Pair(now, tcpResult)
+            pingCache[cacheKey] = Pair(now, tcpResult)
         }
         return@withContext tcpResult
     }
 
     suspend fun pingHost(host: String, port: Int = 443): Int = withContext(Dispatchers.IO) {
+        val cacheKey = "host:${host.trim()}:$port"
         val now = System.currentTimeMillis()
-        val cached = pingCache[host]
+        val cached = pingCache[cacheKey]
         if (cached != null && (now - cached.first) < CACHE_DURATION_MS && cached.second > 0) {
             return@withContext cached.second
         }
@@ -127,7 +133,7 @@ object DnsPingEngine {
                 socket.connect(InetSocketAddress(address, port), 1200)
                 val elapsed = ((System.nanoTime() - startTime) / 1_000_000).toInt()
                 val result = if (elapsed > 0) elapsed else 1
-                pingCache[host] = Pair(now, result)
+                pingCache[cacheKey] = Pair(now, result)
                 return@withContext result
             }
         } catch (e: Exception) {

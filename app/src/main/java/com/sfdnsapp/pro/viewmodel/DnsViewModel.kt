@@ -1,19 +1,22 @@
 package com.sfdnsapp.pro.viewmodel
 
+/**
+ * ViewModel managing DNS selections, active VPN state, ping measurements, and system configuration.
+ * Fully aligned with PrefKeys and hardened for Android 12+ and Android 14+.
+ */
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.net.TrafficStats
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sfdnsapp.pro.DnsVpnService
+import com.sfdnsapp.pro.PrefKeys
 import com.sfdnsapp.pro.data.AppInfo
 import com.sfdnsapp.pro.data.DnsRepository
 import com.sfdnsapp.pro.data.DnsServer
-import com.sfdnsapp.pro.data.GameItem
 import com.sfdnsapp.pro.getSafeBoolean
 import com.sfdnsapp.pro.getSafeString
 import com.sfdnsapp.pro.service.DnsPingEngine
@@ -24,14 +27,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
 data class UiMetrics(
     val ping: String = "—",
-    val downloadSpeed: String = "0.0 MB/s",
-    val uploadSpeed: String = "0.0 MB/s",
+    val downloadSpeed: String = "0 Q/s",
+    val uploadSpeed: String = "ACTIVE",
     val durationFormatted: String = "00:00:00"
 )
 
@@ -41,12 +43,16 @@ data class AppSettings(
     val isIpv6Enabled: Boolean = false,
     val isAntiDpiEnabled: Boolean = false,
     val isAutoReconnect: Boolean = true,
-    val isNotificationEnabled: Boolean = true
+    val isNotificationEnabled: Boolean = true,
+    val isKillSwitchEnabled: Boolean = false,
+    val carrierOpt: String = "auto", // "auto", "mci", "mtn", "wifi"
+    val isSplitTunnelEnabled: Boolean = false,
+    val splitTunnelMode: String = "disallowed" // "allowed", "disallowed"
 )
 
 class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val prefs = application.getSharedPreferences("sfdns_prefs", Context.MODE_PRIVATE)
+    private val prefs = application.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
 
     private val _connectionState = MutableStateFlow("disconnected")
     val connectionState: StateFlow<String> = _connectionState.asStateFlow()
@@ -89,9 +95,6 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
     private var durationJob: Job? = null
     private var connectionStartTime = 0L
-    private var lastRxBytes = 0L
-    private var lastTxBytes = 0L
-    private var lastMetricsTime = 0L
 
     init {
         loadPersistedData()
@@ -100,12 +103,16 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadPersistedData() {
-        val lang = prefs.getSafeString("language", "fa")
-        val doh = prefs.getSafeBoolean("doh_enabled", false)
-        val ipv6 = prefs.getSafeBoolean("ipv6_enabled", false)
-        val antiDpi = prefs.getSafeBoolean("anti_dpi_enabled", false)
-        val autoRec = prefs.getSafeBoolean("auto_reconnect", true)
-        val notif = prefs.getSafeBoolean("notification_enabled", true)
+        val lang = prefs.getSafeString(PrefKeys.KEY_LANGUAGE, "fa")
+        val doh = prefs.getSafeBoolean(PrefKeys.KEY_DOH_ENABLED, false)
+        val ipv6 = prefs.getSafeBoolean(PrefKeys.KEY_IPV6_ENABLED, false)
+        val antiDpi = prefs.getSafeBoolean(PrefKeys.KEY_ANTI_DPI_ENABLED, false)
+        val autoRec = prefs.getSafeBoolean(PrefKeys.KEY_AUTO_RECONNECT, true)
+        val notif = prefs.getSafeBoolean(PrefKeys.KEY_NOTIFICATION_ENABLED, true)
+        val killSwitch = prefs.getSafeBoolean(PrefKeys.KEY_KILL_SWITCH, false)
+        val carrierOpt = prefs.getSafeString(PrefKeys.KEY_CARRIER_OPT, "auto")
+        val splitEnabled = prefs.getSafeBoolean(PrefKeys.KEY_SPLIT_TUNNEL_ENABLED, false)
+        val splitMode = prefs.getSafeString(PrefKeys.KEY_SPLIT_TUNNEL_MODE, "disallowed")
 
         _settings.value = AppSettings(
             language = lang,
@@ -113,11 +120,15 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             isIpv6Enabled = ipv6,
             isAntiDpiEnabled = antiDpi,
             isAutoReconnect = autoRec,
-            isNotificationEnabled = notif
+            isNotificationEnabled = notif,
+            isKillSwitchEnabled = killSwitch,
+            carrierOpt = carrierOpt,
+            isSplitTunnelEnabled = splitEnabled,
+            splitTunnelMode = splitMode
         )
 
         // Load custom DNS list
-        val customJson = prefs.getSafeString("custom_dns_list", "[]")
+        val customJson = prefs.getSafeString(PrefKeys.KEY_CUSTOM_DNS_LIST, "[]")
         val customList = mutableListOf<DnsServer>()
         try {
             val jsonArray = JSONArray(customJson)
@@ -144,23 +155,27 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         val allServers = DnsRepository.defaultServers + customList
         _dnsList.value = allServers
 
-        val lastDnsName = prefs.getSafeString("last_dns_name", "Shecan")
+        val lastDnsName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "Shecan")
         val matched = allServers.find { it.name.equals(lastDnsName, ignoreCase = true) || it.faName.contains(lastDnsName) }
             ?: allServers.first()
         _selectedDns.value = matched
 
         // Load bypass apps
-        val bypassJson = prefs.getSafeString("bypass_packages", "[]")
-        try {
-            val arr = JSONArray(bypassJson)
-            val set = mutableSetOf<String>()
-            for (i in 0 until arr.length()) {
-                set.add(arr.getString(i))
-            }
-            _bypassPackages.value = set
-        } catch (e: Exception) {
-            e.printStackTrace()
+        val splitAppsStr = prefs.getSafeString(PrefKeys.KEY_SPLIT_TUNNEL_APPS, "")
+        val legacyBypassJson = prefs.getSafeString(PrefKeys.KEY_BYPASS_PACKAGES, "[]")
+        val set = mutableSetOf<String>()
+
+        if (splitAppsStr.isNotEmpty()) {
+            set.addAll(splitAppsStr.split(",").map { it.trim() }.filter { it.isNotEmpty() })
+        } else {
+            try {
+                val arr = JSONArray(legacyBypassJson)
+                for (i in 0 until arr.length()) {
+                    set.add(arr.getString(i))
+                }
+            } catch (_: Exception) {}
         }
+        _bypassPackages.value = set
 
         // Check running status
         if (DnsVpnService.isRunning) {
@@ -181,11 +196,11 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     fun selectDns(server: DnsServer) {
         _selectedDns.value = server
         prefs.edit()
-            .putString("last_dns_name", server.name)
-            .putString("last_primary_dns", server.primary)
-            .putString("last_secondary_dns", server.secondary)
-            .putString("last_primary_dns_ipv6", server.primaryV6)
-            .putString("last_secondary_dns_ipv6", server.secondaryV6)
+            .putString(PrefKeys.KEY_LAST_DNS_NAME, server.name)
+            .putString(PrefKeys.KEY_LAST_PRIMARY_DNS, server.primary)
+            .putString(PrefKeys.KEY_LAST_SECONDARY_DNS, server.secondary)
+            .putString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, server.primaryV6)
+            .putString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, server.secondaryV6)
             .apply()
 
         // Probe latency immediately
@@ -300,32 +315,58 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             }
             jsonArray.put(obj)
         }
-        prefs.edit().putString("custom_dns_list", jsonArray.toString()).apply()
+        prefs.edit().putString(PrefKeys.KEY_CUSTOM_DNS_LIST, jsonArray.toString()).apply()
     }
 
     fun updateLanguage(lang: String) {
         _settings.value = _settings.value.copy(language = lang)
-        prefs.edit().putString("language", lang).apply()
+        prefs.edit().putString(PrefKeys.KEY_LANGUAGE, lang).apply()
     }
 
     fun toggleDoh(enabled: Boolean) {
         _settings.value = _settings.value.copy(isDohEnabled = enabled)
-        prefs.edit().putBoolean("doh_enabled", enabled).apply()
+        prefs.edit().putBoolean(PrefKeys.KEY_DOH_ENABLED, enabled).apply()
     }
 
     fun toggleIpv6(enabled: Boolean) {
         _settings.value = _settings.value.copy(isIpv6Enabled = enabled)
-        prefs.edit().putBoolean("ipv6_enabled", enabled).apply()
+        prefs.edit().putBoolean(PrefKeys.KEY_IPV6_ENABLED, enabled).apply()
     }
 
     fun toggleAntiDpi(enabled: Boolean) {
         _settings.value = _settings.value.copy(isAntiDpiEnabled = enabled)
-        prefs.edit().putBoolean("anti_dpi_enabled", enabled).apply()
+        prefs.edit().putBoolean(PrefKeys.KEY_ANTI_DPI_ENABLED, enabled).apply()
     }
 
     fun toggleAutoReconnect(enabled: Boolean) {
         _settings.value = _settings.value.copy(isAutoReconnect = enabled)
-        prefs.edit().putBoolean("auto_reconnect", enabled).apply()
+        prefs.edit().putBoolean(PrefKeys.KEY_AUTO_RECONNECT, enabled).apply()
+    }
+
+    fun toggleKillSwitch(enabled: Boolean) {
+        _settings.value = _settings.value.copy(isKillSwitchEnabled = enabled)
+        prefs.edit().putBoolean(PrefKeys.KEY_KILL_SWITCH, enabled).apply()
+    }
+
+    fun setCarrierOpt(carrier: String) {
+        _settings.value = _settings.value.copy(carrierOpt = carrier)
+        prefs.edit().putString(PrefKeys.KEY_CARRIER_OPT, carrier).apply()
+    }
+
+    fun setSplitTunnel(enabled: Boolean, mode: String, apps: Set<String>) {
+        _settings.value = _settings.value.copy(
+            isSplitTunnelEnabled = enabled,
+            splitTunnelMode = mode
+        )
+        _bypassPackages.value = apps
+        val appsStr = apps.joinToString(",")
+        val arr = JSONArray(apps)
+        prefs.edit()
+            .putBoolean(PrefKeys.KEY_SPLIT_TUNNEL_ENABLED, enabled)
+            .putString(PrefKeys.KEY_SPLIT_TUNNEL_MODE, mode)
+            .putString(PrefKeys.KEY_SPLIT_TUNNEL_APPS, appsStr)
+            .putString(PrefKeys.KEY_BYPASS_PACKAGES, arr.toString())
+            .apply()
     }
 
     fun toggleBypassPackage(pkg: String) {
@@ -336,42 +377,70 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
             current.add(pkg)
         }
         _bypassPackages.value = current
+        val isEnabled = current.isNotEmpty()
+        val appsStr = current.joinToString(",")
         val arr = JSONArray(current)
-        prefs.edit().putString("bypass_packages", arr.toString()).apply()
+
+        prefs.edit()
+            .putBoolean(PrefKeys.KEY_SPLIT_TUNNEL_ENABLED, isEnabled)
+            .putString(PrefKeys.KEY_SPLIT_TUNNEL_APPS, appsStr)
+            .putString(PrefKeys.KEY_BYPASS_PACKAGES, arr.toString())
+            .apply()
     }
 
     private fun scanInstalledApps() {
         viewModelScope.launch(Dispatchers.IO) {
             val pm = getApplication<Application>().packageManager
-            val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
-            } else {
-                @Suppress("DEPRECATION")
-                pm.getInstalledApplications(0)
-            }
-
             val appList = mutableListOf<AppInfo>()
             val gamePkgSet = mutableSetOf<String>()
+            val seenPackages = mutableSetOf<String>()
 
-            packages.forEach { appInfo ->
-                val isSys = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                val label = pm.getApplicationLabel(appInfo).toString()
-                val pkg = appInfo.packageName
-
-                if (!isSys || pkg.contains("chrome") || pkg.contains("browser") || pkg.contains("youtube") || pkg.contains("telegram")) {
-                    appList.add(
-                        AppInfo(
-                            name = label,
-                            packageName = pkg,
-                            isSystemApp = isSys
-                        )
-                    )
+            // 1. Query all launcher activities (guaranteed to find installed user-facing apps)
+            try {
+                val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+                val resolveInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    pm.queryIntentActivities(launcherIntent, PackageManager.ResolveInfoFlags.of(0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    pm.queryIntentActivities(launcherIntent, 0)
                 }
 
-                // Check if matches game packages
+                for (ri in resolveInfos) {
+                    val pkg = ri.activityInfo?.packageName ?: continue
+                    if (seenPackages.add(pkg)) {
+                        val label = ri.loadLabel(pm).toString()
+                        val isSys = (ri.activityInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        appList.add(AppInfo(name = label, packageName = pkg, isSystemApp = isSys))
+                    }
+                }
+            } catch (_: Exception) {}
+
+            // 2. Also try getInstalledApplications for completeness
+            try {
+                val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    pm.getInstalledApplications(0)
+                }
+
+                packages.forEach { appInfo ->
+                    val pkg = appInfo.packageName
+                    if (seenPackages.add(pkg)) {
+                        val isSys = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        val label = pm.getApplicationLabel(appInfo).toString()
+                        if (!isSys || pkg.contains("chrome") || pkg.contains("browser") || pkg.contains("youtube") || pkg.contains("telegram")) {
+                            appList.add(AppInfo(name = label, packageName = pkg, isSystemApp = isSys))
+                        }
+                    }
+                }
+            } catch (_: Exception) {}
+
+            // Check game matches
+            for (app in appList) {
                 DnsRepository.popularGames.forEach { g ->
-                    if (g.packageName.equals(pkg, ignoreCase = true)) {
-                        gamePkgSet.add(pkg)
+                    if (g.packageName.equals(app.packageName, ignoreCase = true)) {
+                        gamePkgSet.add(app.packageName)
                     }
                 }
             }
@@ -384,11 +453,11 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     private fun startMetricsLoop() {
         stopMetricsLoop()
         connectionStartTime = System.currentTimeMillis()
-        lastRxBytes = TrafficStats.getTotalRxBytes()
-        lastTxBytes = TrafficStats.getTotalTxBytes()
-        lastMetricsTime = System.currentTimeMillis()
 
         durationJob = viewModelScope.launch {
+            var lastQueries = DnsVpnService.dohQueryCounter.get()
+            var lastTime = System.currentTimeMillis()
+
             while (_connectionState.value == "connected") {
                 val now = System.currentTimeMillis()
                 val elapsedSec = ((now - connectionStartTime) / 1000L).coerceAtLeast(0L)
@@ -397,34 +466,25 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
                 val seconds = elapsedSec % 60
                 val durationFormatted = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
-                val timeDiffSec = ((now - lastMetricsTime) / 1000.0).coerceAtLeast(0.1)
-                val currentRx = TrafficStats.getTotalRxBytes()
-                val currentTx = TrafficStats.getTotalTxBytes()
+                val timeDiffSec = ((now - lastTime) / 1000.0).coerceAtLeast(0.1)
+                val currentQueries = DnsVpnService.dohQueryCounter.get()
+                val qDiff = (currentQueries - lastQueries).coerceAtLeast(0)
+                val qps = if (timeDiffSec > 0) (qDiff / timeDiffSec).toLong() else 0L
 
-                var downSpeed = "0.0 MB/s"
-                var upSpeed = "0.0 MB/s"
+                lastQueries = currentQueries
+                lastTime = now
 
-                if (currentRx > lastRxBytes && lastRxBytes > 0) {
-                    val rxSpeedMB = ((currentRx - lastRxBytes) / (1024.0 * 1024.0)) / timeDiffSec
-                    downSpeed = String.format("%.1f MB/s", rxSpeedMB.coerceAtLeast(0.0))
-                }
-                if (currentTx > lastTxBytes && lastTxBytes > 0) {
-                    val txSpeedMB = ((currentTx - lastTxBytes) / (1024.0 * 1024.0)) / timeDiffSec
-                    upSpeed = String.format("%.1f MB/s", txSpeedMB.coerceAtLeast(0.0))
-                }
-
-                lastRxBytes = currentRx
-                lastTxBytes = currentTx
-                lastMetricsTime = now
-
-                // Update active ping from cache
+                // Accurate active ping from cache, or "—" if not pinged yet (never hardcoded 18ms)
                 val currentPingVal = _pingMap.value[_selectedDns.value.id]
-                val pingStr = if (currentPingVal != null && currentPingVal > 0) "${currentPingVal}ms" else "18ms"
+                val pingStr = if (currentPingVal != null && currentPingVal > 0) "${currentPingVal}ms" else "—"
+
+                val isDoh = _settings.value.isDohEnabled
+                val tunnelLabel = if (isDoh) "DoH SECURE" else "DNS SECURE"
 
                 _metrics.value = UiMetrics(
                     ping = pingStr,
-                    downloadSpeed = downSpeed,
-                    uploadSpeed = upSpeed,
+                    downloadSpeed = "$qps Q/s",
+                    uploadSpeed = tunnelLabel,
                     durationFormatted = durationFormatted
                 )
 

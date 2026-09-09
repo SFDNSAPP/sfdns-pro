@@ -1,5 +1,9 @@
 package com.sfdnsapp.pro
 
+/**
+ * Helper utility for updating SFDNS widgets.
+ * Fixed: Migrated to unified PrefKeys and removed hardcoded ping fallback.
+ */
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
@@ -31,10 +35,10 @@ object DnsWidgetHelper {
 
     fun updateQuickWidgets(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         val isRunning = DnsVpnService.isRunning
-        val prefs = context.getSharedPreferences("sfdns_prefs", Context.MODE_PRIVATE)
-        val dnsName = prefs.getSafeString("last_dns_name", "SFDNS Pro")
-        val pingVal = prefs.getSafeString("last_dns_ping", "")
-        val pingDisplay = if (pingVal.isNotEmpty()) "⚡ $pingVal" else "⚡ 22ms"
+        val prefs = context.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+        val dnsName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "SFDNS Pro")
+        val pingVal = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_PING, "")
+        val pingDisplay = if (pingVal.isNotEmpty()) "⚡ $pingVal" else "⚡ —"
 
         for (id in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_dns_quick)
@@ -73,12 +77,12 @@ object DnsWidgetHelper {
 
     fun updateDetailWidgets(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         val isRunning = DnsVpnService.isRunning
-        val prefs = context.getSharedPreferences("sfdns_prefs", Context.MODE_PRIVATE)
-        val dnsName = prefs.getSafeString("last_dns_name", "SFDNS Pro")
-        val primaryDns = prefs.getSafeString("last_primary_dns", "178.22.122.100")
-        val secondaryDns = prefs.getSafeString("last_secondary_dns", "185.51.200.2")
-        val pingVal = prefs.getSafeString("last_dns_ping", "")
-        val pingDisplay = if (pingVal.isNotEmpty()) "⚡ $pingVal" else "⚡ 22ms"
+        val prefs = context.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+        val dnsName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "SFDNS Pro")
+        val primaryDns = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS, "178.22.122.100")
+        val secondaryDns = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS, "185.51.200.2")
+        val pingVal = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_PING, "")
+        val pingDisplay = if (pingVal.isNotEmpty()) "⚡ $pingVal" else "⚡ —"
 
         for (id in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_dns_detail)

@@ -91,10 +91,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Fixed: onResume preserves "connecting" state and doesn't incorrectly reset to "disconnected".
+     */
     override fun onResume() {
         super.onResume()
-        val currentStatus = if (DnsVpnService.isRunning) "connected" else "disconnected"
-        viewModel.setConnectionStatus(currentStatus)
+        val currentVmState = viewModel.connectionState.value
+        if (DnsVpnService.isRunning) {
+            viewModel.setConnectionStatus("connected")
+        } else if (currentVmState != "connecting") {
+            viewModel.setConnectionStatus("disconnected")
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -156,11 +163,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Fixed: Safe stop handling on Android 12+ catching BackgroundServiceStartNotAllowedException
+     * and providing fallback directly through companion instance.
+     */
     private fun stopVpnService() {
-        val intent = Intent(this, DnsVpnService::class.java).apply {
-            action = DnsVpnService.ACTION_STOP
+        try {
+            val intent = Intent(this, DnsVpnService::class.java).apply {
+                action = DnsVpnService.ACTION_STOP
+            }
+            startService(intent)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Failed to stop VPN via startService, requesting stop directly", e)
+            DnsVpnService.requestStop()
         }
-        startService(intent)
     }
 
     private fun requestNotificationPermission() {

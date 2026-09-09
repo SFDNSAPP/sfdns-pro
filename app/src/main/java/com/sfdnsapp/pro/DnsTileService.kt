@@ -1,5 +1,9 @@
 package com.sfdnsapp.pro
 
+/**
+ * Quick Settings Tile service for toggling SFDNS PRO.
+ * Fixed: Migrated to unified PrefKeys and safe stop handling.
+ */
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -28,11 +32,15 @@ class DnsTileService : TileService() {
             }
             tile.updateTile()
 
-            // Stop VPN
+            // Stop VPN safely
             val serviceIntent = Intent(this, DnsVpnService::class.java).apply {
                 action = DnsVpnService.ACTION_STOP
             }
-            startService(serviceIntent)
+            try {
+                startService(serviceIntent)
+            } catch (e: Exception) {
+                DnsVpnService.requestStop()
+            }
         } else {
             // Optimistically update UI to connecting
             tile.state = Tile.STATE_ACTIVE
@@ -42,12 +50,12 @@ class DnsTileService : TileService() {
             tile.updateTile()
 
             // Start VPN with last saved DNS configuration
-            val prefs = getSharedPreferences("sfdns_prefs", Context.MODE_PRIVATE)
-            val name = prefs.getSafeString("last_dns_name", "Cloudflare")
-            val primary = prefs.getSafeString("last_primary_dns", "1.1.1.1")
-            val secondary = prefs.getSafeString("last_secondary_dns", "1.0.0.1")
-            val primaryIpv6 = prefs.getSafeString("last_primary_dns_ipv6", "")
-            val secondaryIpv6 = prefs.getSafeString("last_secondary_dns_ipv6", "")
+            val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+            val name = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "Cloudflare")
+            val primary = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS, "1.1.1.1")
+            val secondary = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS, "1.0.0.1")
+            val primaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, "")
+            val secondaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, "")
 
             val serviceIntent = Intent(this, DnsVpnService::class.java).apply {
                 action = DnsVpnService.ACTION_START
@@ -83,8 +91,8 @@ class DnsTileService : TileService() {
 
         if (isRunning) {
             tile.state = Tile.STATE_ACTIVE
-            val prefs = getSharedPreferences("sfdns_prefs", Context.MODE_PRIVATE)
-            val name = prefs.getSafeString("last_dns_name", "SFDNS")
+            val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+            val name = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "SFDNS")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 tile.subtitle = name
             }

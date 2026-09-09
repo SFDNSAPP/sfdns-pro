@@ -1,5 +1,9 @@
 package com.sfdnsapp.pro
 
+/**
+ * Broadcast receiver for widget toggle actions.
+ * Fixed: Migrated to unified PrefKeys and safe service stop handling.
+ */
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -51,18 +55,22 @@ class DnsWidgetActionReceiver : BroadcastReceiver() {
             val isRunning = DnsVpnService.isRunning
 
             if (isRunning) {
-                // Stop VPN Service
+                // Stop VPN Service safely
                 val stopIntent = Intent(context, DnsVpnService::class.java).apply {
                     action = DnsVpnService.ACTION_STOP
                 }
-                context.startService(stopIntent)
+                try {
+                    context.startService(stopIntent)
+                } catch (e: Exception) {
+                    DnsVpnService.requestStop()
+                }
                 DnsWidgetHelper.updateAllWidgets(context)
             } else {
                 // Use goAsync to allow quick parallel DNS ping testing before starting VPN
                 val pendingResult = goAsync()
                 Thread {
                     try {
-                        val prefs = context.getSharedPreferences("sfdns_prefs", Context.MODE_PRIVATE)
+                        val prefs = context.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
 
                         // Run parallel ping scan on candidates to select the absolute fastest server live
                         var bestCandidate: WidgetDnsCandidate? = null
@@ -111,25 +119,25 @@ class DnsWidgetActionReceiver : BroadcastReceiver() {
                             chosenSecondaryIpv6 = bestCandidate.ipv6Secondary
 
                             prefs.edit().apply {
-                                putString("last_dns_name", chosenName)
-                                putString("last_primary_dns", chosenPrimary)
-                                putString("last_secondary_dns", chosenSecondary)
-                                putString("last_primary_dns_ipv6", chosenPrimaryIpv6)
-                                putString("last_secondary_dns_ipv6", chosenSecondaryIpv6)
-                                putString("last_dns_ping", "${bestPing}ms")
+                                putString(PrefKeys.KEY_LAST_DNS_NAME, chosenName)
+                                putString(PrefKeys.KEY_LAST_PRIMARY_DNS, chosenPrimary)
+                                putString(PrefKeys.KEY_LAST_SECONDARY_DNS, chosenSecondary)
+                                putString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, chosenPrimaryIpv6)
+                                putString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, chosenSecondaryIpv6)
+                                putString(PrefKeys.KEY_LAST_DNS_PING, "${bestPing}ms")
                                 apply()
                             }
                         } else {
-                            chosenName = prefs.getSafeString("last_dns_name", "Cloudflare (Public)")
-                            chosenPrimary = prefs.getSafeString("last_primary_dns", "1.1.1.1")
-                            chosenSecondary = prefs.getSafeString("last_secondary_dns", "1.0.0.1")
-                            chosenPrimaryIpv6 = prefs.getSafeString("last_primary_dns_ipv6", "")
-                            chosenSecondaryIpv6 = prefs.getSafeString("last_secondary_dns_ipv6", "")
+                            chosenName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "Cloudflare (Public)")
+                            chosenPrimary = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS, "1.1.1.1")
+                            chosenSecondary = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS, "1.0.0.1")
+                            chosenPrimaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS_IPV6, "")
+                            chosenSecondaryIpv6 = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS_IPV6, "")
                         }
 
-                        val splitTunnelEnabled = prefs.getSafeBoolean("split_tunnel_enabled", false)
-                        val splitTunnelMode = prefs.getSafeString("split_tunnel_mode", "disallowed")
-                        val splitTunnelApps = prefs.getSafeString("split_tunnel_apps", "")
+                        val splitTunnelEnabled = prefs.getSafeBoolean(PrefKeys.KEY_SPLIT_TUNNEL_ENABLED, false)
+                        val splitTunnelMode = prefs.getSafeString(PrefKeys.KEY_SPLIT_TUNNEL_MODE, "disallowed")
+                        val splitTunnelApps = prefs.getSafeString(PrefKeys.KEY_SPLIT_TUNNEL_APPS, "")
 
                         val startIntent = Intent(context, DnsVpnService::class.java).apply {
                             action = DnsVpnService.ACTION_START
