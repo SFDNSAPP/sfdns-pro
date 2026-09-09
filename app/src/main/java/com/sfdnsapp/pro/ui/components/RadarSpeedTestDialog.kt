@@ -214,7 +214,8 @@ fun RadarSpeedTestDialog(
 
             // Fastest Server Banner
             fastestServer?.let { fastest ->
-                val p = pingMap[fastest.id] ?: fastest.defaultPing
+                // Never show the static defaultPing as if it were measured.
+                val p = pingMap[fastest.id]
                 Spacer(modifier = Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
@@ -251,7 +252,7 @@ fun RadarSpeedTestDialog(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "${p}ms",
+                                text = if (p != null && p > 0) "${p}ms" else "—",
                                 color = NeonGreen,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,

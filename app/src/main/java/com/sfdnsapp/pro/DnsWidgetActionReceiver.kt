@@ -42,10 +42,11 @@ class DnsWidgetActionReceiver : BroadcastReceiver() {
         private fun pingIp(ip: String, timeoutMs: Int = 500): Long {
             val start = System.nanoTime()
             return try {
-                val socket = Socket()
-                DnsVpnService.protectSocket(socket)
-                socket.connect(InetSocketAddress(ip, 53), timeoutMs)
-                socket.close()
+                // use{}: a failed connect() must not leak the socket fd.
+                Socket().use { socket ->
+                    DnsVpnService.protectSocket(socket)
+                    socket.connect(InetSocketAddress(ip, 53), timeoutMs)
+                }
                 val diff = (System.nanoTime() - start) / 1_000_000
                 if (diff > 0) diff else 1L
             } catch (e: Exception) {

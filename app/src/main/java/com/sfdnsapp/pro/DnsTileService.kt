@@ -8,6 +8,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
+import android.net.VpnService
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -57,6 +58,19 @@ class DnsTileService : TileService() {
                 tile.subtitle = if (isPersian()) "در حال اتصال..." else "Connecting..."
             }
             tile.updateTile()
+
+            // First tap ever: VPN authorization not granted yet. Route the user
+            // through the system consent dialog instead of failing silently
+            // (builder.establish() would just return null without consent).
+            val prepareIntent = VpnService.prepare(this)
+            if (prepareIntent != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    tile.subtitle = if (isPersian()) "نیاز به تایید مجوز VPN" else "VPN permission needed"
+                }
+                tile.updateTile()
+                unlockAndRun { startActivityAndCollapse(prepareIntent) }
+                return
+            }
 
             // Start VPN with last saved DNS configuration
             val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
@@ -118,5 +132,10 @@ class DnsTileService : TileService() {
             }
         }
         tile.updateTile()
+    }
+
+    private fun isPersian(): Boolean {
+        val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getSafeString(PrefKeys.KEY_LANGUAGE, "fa") != "en"
     }
 }

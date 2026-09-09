@@ -58,8 +58,10 @@ import com.sfdnsapp.pro.ui.theme.TextPrimary
 fun SplitTunnelDialog(
     installedApps: List<AppInfo>,
     bypassPackages: Set<String>,
+    splitMode: String,
     isPersian: Boolean,
     onToggleApp: (String) -> Unit,
+    onSelectMode: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -110,7 +112,11 @@ fun SplitTunnelDialog(
                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = if (isPersian) "${bypassPackages.size} برنامه مستثنی شده است" else "${bypassPackages.size} apps bypassed",
+                            text = if (splitMode == "allowed") {
+                                if (isPersian) "فقط ${bypassPackages.size} برنامه از تونل عبور می‌کنند" else "Only ${bypassPackages.size} apps use the tunnel"
+                            } else {
+                                if (isPersian) "${bypassPackages.size} برنامه مستثنی شده است" else "${bypassPackages.size} apps bypassed"
+                            },
                             color = TextDim,
                             fontSize = 11.sp
                         )
@@ -158,6 +164,27 @@ fun SplitTunnelDialog(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Split mode selector: bypass the listed apps, or tunnel ONLY them.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ModeButton(
+                    label = if (isPersian) "عبور منتخب‌ها" else "BYPASS LISTED",
+                    selected = splitMode != "allowed",
+                    onClick = { onSelectMode("disallowed") },
+                    modifier = Modifier.weight(1f)
+                )
+                ModeButton(
+                    label = if (isPersian) "فقط منتخب‌ها" else "ONLY LISTED",
+                    selected = splitMode == "allowed",
+                    onClick = { onSelectMode("allowed") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
@@ -210,5 +237,30 @@ fun SplitTunnelDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ModeButton(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (selected) NeonGreen.copy(alpha = 0.18f) else CyberSurface)
+            .border(1.dp, if (selected) NeonGreen.copy(alpha = 0.6f) else CyberCardBorder, RoundedCornerShape(10.dp))
+            .clickable { onClick() }
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            color = if (selected) NeonGreen else TextDim,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

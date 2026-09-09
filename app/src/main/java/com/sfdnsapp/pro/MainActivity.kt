@@ -19,20 +19,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.sfdnsapp.pro.ui.screens.MainScreen
 import com.sfdnsapp.pro.ui.theme.MyApplicationTheme
 import com.sfdnsapp.pro.viewmodel.DnsViewModel
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-
-    companion object {
-        const val EXTRA_AUTO_START = "extra_auto_start"
-    }
 
     private val viewModel: DnsViewModel by viewModels()
     private var isVpnStatusReceiverRegistered = false
@@ -78,26 +69,8 @@ class MainActivity : ComponentActivity() {
         // Handle Deep Link if present
         handleDeepLink(intent?.data)
 
-        // Handle tap-to-reconnect from the boot notification (Android 12+)
-        handleAutoStart(intent)
-
         // Request notification permission on Android 13+
         requestNotificationPermission()
-
-        // Apply server/setting changes immediately while connected: re-establish
-        // the tunnel with the latest configuration (debounced for rapid toggles).
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.restartRequests
-                    .debounce(400)
-                    .collect {
-                        if (DnsVpnService.isRunning) {
-                            Log.i("MainActivity", "Re-establishing VPN to apply updated configuration")
-                            startVpnService()
-                        }
-                    }
-            }
-        }
 
         setContent {
             MyApplicationTheme {
@@ -125,15 +98,14 @@ class MainActivity : ComponentActivity() {
      */
     override fun onResume() {
         super.onResume()
-        // Tile/Widget may have switched the active DNS while we were away.
-        viewModel.syncSelectedDnsWithPrefs()
         val currentVmState = viewModel.connectionState.value
         if (DnsVpnService.isRunning) {
             viewModel.setConnectionStatus("connected")
         } else {
-            // Ensure UI is not stuck in connecting if VPN permission was dismissed or service failed
+            // Ensure UI is not stuck in connecting/connected if VPN permission was
+            // dismissed, the service failed, or it died without a status broadcast.
             val needsVpnPrepare = VpnService.prepare(this) != null
-            if (needsVpnPrepare || currentVmState == "connecting") {
+            if (needsVpnPrepare || currentVmState == "connecting" || currentVmState == "connected") {
                 viewModel.setConnectionStatus("disconnected")
             }
         }
@@ -143,18 +115,6 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         handleDeepLink(intent.data)
-        handleAutoStart(intent)
-    }
-
-    private fun handleAutoStart(intent: Intent?) {
-        if (intent?.getBooleanExtra(EXTRA_AUTO_START, false) != true) return
-        intent.removeExtra(EXTRA_AUTO_START)
-        val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, MODE_PRIVATE)
-        val autoConnect = prefs.getSafeBoolean(PrefKeys.KEY_AUTO_CONNECT, true)
-        if (autoConnect && !DnsVpnService.isRunning && viewModel.connectionState.value != "connecting") {
-            Log.i("MainActivity", "Auto-starting VPN from boot notification tap")
-            prepareAndStartVpn()
-        }
     }
 
     private fun handleDeepLink(uri: Uri?) {
@@ -168,16 +128,17 @@ class MainActivity : ComponentActivity() {
 
             if (primary.isNotBlank()) {
                 val success = viewModel.addCustomDns(name, primary, secondary, primaryV6, secondaryV6)
+                val isPersian = viewModel.settings.value.language != "en"
                 if (success) {
-                    Toast.makeText(this, "دی‌ان‌اس وارد شد: $name", Toast.LENGTH_SHORT).show()
+                    val ok = if (isPersian) "دی‌ان‌اس وارد شد: $name" else "DNS imported: $name"
+                    Toast.makeText(this, ok, Toast.LENGTH_SHORT).show()
                 } else {
-                    val isPersian = viewModel.settings.value.language != "en"
                     val err = if (isPersian) {
                         "آدرس DNS داخل لینک معتبر نیست"
                     } else {
-                        "Invalid DNS address in link"
+                        "DNS address in link is invalid"
                     }
-                    Toast.makeText(this, err, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, err, Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {

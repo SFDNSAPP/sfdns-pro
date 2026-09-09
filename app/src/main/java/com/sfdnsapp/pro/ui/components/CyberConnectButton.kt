@@ -1,6 +1,7 @@
 package com.sfdnsapp.pro.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -58,81 +58,104 @@ fun CyberConnectButton(
 
     val infiniteTransition = rememberInfiniteTransition(label = "connectButtonAnimations")
 
+    // Rotation for outer cyber dashed ring
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(if (isConnected) 4000 else if (isConnecting) 1200 else 10000, easing = LinearEasing),
+            animation = tween(if (isConnected) 5000 else if (isConnecting) 1500 else 12000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "ringRotation"
     )
 
-    val pulseGlow by infiniteTransition.animateFloat(
-        initialValue = 0.85f,
-        targetValue = 1.15f,
+    // Outer radar expanding wave pulse
+    val waveScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.35f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1500),
-            repeatMode = RepeatMode.Reverse
+            animation = tween(if (isConnected) 1800 else 2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
         ),
-        label = "pulseGlow"
+        label = "waveScale"
+    )
+
+    val waveAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(if (isConnected) 1800 else 2400, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "waveAlpha"
     )
 
     val activeColor by animateColorAsState(
         targetValue = when {
             isConnected -> NeonGreen
             isConnecting -> NeonCyan
-            else -> Color(0xFF334155)
+            else -> Color(0xFF38BDF8)
         },
         animationSpec = tween(400),
         label = "activeColor"
     )
 
-    val buttonBg by animateColorAsState(
-        targetValue = when {
-            isConnected -> Color(0xFF06281E)
-            isConnecting -> Color(0xFF082530)
-            else -> Color(0xFF0F121C)
-        },
-        animationSpec = tween(400),
-        label = "buttonBg"
-    )
-
     Box(
-        modifier = modifier.size(190.dp),
+        modifier = modifier.size(220.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Outer glowing pulse ring
+        // Concentric Cyber Ring 1 (Outermost - 212dp)
+        Box(
+            modifier = Modifier
+                .size(212.dp)
+                .clip(CircleShape)
+                .border(
+                    width = 1.dp,
+                    color = if (isConnected) NeonGreen.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.04f),
+                    shape = CircleShape
+                )
+        )
+
+        // Concentric Cyber Ring 2 (Middle - 182dp)
+        Box(
+            modifier = Modifier
+                .size(182.dp)
+                .clip(CircleShape)
+                .border(
+                    width = 1.dp,
+                    color = if (isConnected) NeonGreen.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.06f),
+                    shape = CircleShape
+                )
+        )
+
+        // Expanding Wave Animation when connected or connecting
         if (isConnected || isConnecting) {
             Box(
                 modifier = Modifier
-                    .size(180.dp)
-                    .scale(pulseGlow)
+                    .size(150.dp)
+                    .scale(waveScale)
                     .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            listOf(
-                                activeColor.copy(alpha = 0.25f),
-                                Color.Transparent
-                            )
-                        )
+                    .border(
+                        width = 1.5.dp,
+                        color = activeColor.copy(alpha = waveAlpha),
+                        shape = CircleShape
                     )
             )
         }
 
-        // Rotating dashed cyber ring
+        // Concentric Cyber Ring 3 (Rotating Sweep Ring - 162dp)
         Box(
             modifier = Modifier
-                .size(165.dp)
+                .size(162.dp)
                 .rotate(rotation)
                 .drawBehind {
                     drawCircle(
                         brush = Brush.sweepGradient(
                             listOf(
-                                activeColor.copy(alpha = 0.8f),
+                                activeColor.copy(alpha = if (isConnected || isConnecting) 0.85f else 0.3f),
                                 Color.Transparent,
-                                activeColor.copy(alpha = 0.3f),
-                                activeColor.copy(alpha = 0.8f)
+                                activeColor.copy(alpha = if (isConnected || isConnecting) 0.4f else 0.15f),
+                                activeColor.copy(alpha = if (isConnected || isConnecting) 0.85f else 0.3f)
                             )
                         ),
                         style = Stroke(width = 2.dp.toPx())
@@ -140,13 +163,44 @@ fun CyberConnectButton(
                 }
         )
 
-        // Inner Power Button
+        // Main Center Button (145dp)
+        val buttonBackground = if (isConnected) {
+            Brush.radialGradient(
+                listOf(
+                    Color(0xFF0F3628),
+                    Color(0xFF071C14)
+                )
+            )
+        } else if (isConnecting) {
+            Brush.radialGradient(
+                listOf(
+                    Color(0xFF0C384D),
+                    Color(0xFF061B24)
+                )
+            )
+        } else {
+            Brush.radialGradient(
+                listOf(
+                    Color(0xFF141926),
+                    Color(0xFF0C0F18)
+                )
+            )
+        }
+
+        val buttonBorderColor = if (isConnected) {
+            NeonGreen
+        } else if (isConnecting) {
+            NeonCyan
+        } else {
+            Color(0xFF28344E)
+        }
+
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(145.dp)
                 .clip(CircleShape)
-                .background(buttonBg)
-                .border(2.dp, activeColor.copy(alpha = 0.7f), CircleShape)
+                .background(buttonBackground)
+                .border(2.dp, buttonBorderColor, CircleShape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(bounded = true, color = activeColor),
@@ -159,30 +213,63 @@ fun CyberConnectButton(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = when {
-                        isConnected -> Icons.Default.Bolt
-                        isConnecting -> Icons.Default.PowerSettingsNew
-                        else -> Icons.Default.PowerSettingsNew
-                    },
-                    contentDescription = "Connect Button",
-                    tint = if (isConnected || isConnecting) activeColor else TextDim,
-                    modifier = Modifier.size(44.dp)
-                )
+                // Central 46dp Icon Badge
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isConnected) {
+                                NeonGreen
+                            } else if (isConnecting) {
+                                NeonCyan.copy(alpha = 0.25f)
+                            } else {
+                                Color.White.copy(alpha = 0.06f)
+                            }
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = if (isConnected) Color.Transparent else activeColor.copy(alpha = 0.4f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isConnected) Icons.Default.Bolt else Icons.Default.PowerSettingsNew,
+                        contentDescription = "Connect State Icon",
+                        tint = if (isConnected) Color(0xFF0A1017) else if (isConnecting) NeonCyan else TextPrimary,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
+                // Action Title
                 Text(
                     text = when {
                         isConnected -> if (isPersian) "متصل شد" else "CONNECTED"
                         isConnecting -> if (isPersian) "در حال اتصال..." else "CONNECTING..."
-                        else -> if (isPersian) "شروع اتصال" else "CONNECT"
+                        else -> if (isPersian) "اتصال" else "CONNECT"
                     },
-                    color = if (isConnected || isConnecting) activeColor else TextPrimary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
+                    color = if (isConnected) NeonGreen else if (isConnecting) NeonCyan else TextPrimary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Black,
                     fontFamily = FontFamily.Monospace,
                     letterSpacing = 1.sp
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                // Subtitle
+                Text(
+                    text = when {
+                        isConnected -> if (isPersian) "برای قطع لمس کنید" else "Tap to disconnect"
+                        isConnecting -> if (isPersian) "تنظیم تونل امن" else "Setting up tunnel"
+                        else -> if (isPersian) "برای شروع انتخاب کن" else "Select to start"
+                    },
+                    color = TextDim,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

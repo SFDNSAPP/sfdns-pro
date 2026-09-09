@@ -273,8 +273,12 @@ fun MainScreen(
                     SplitTunnelDialog(
                         installedApps = installedApps,
                         bypassPackages = bypassPackages,
+                        splitMode = settings.splitTunnelMode,
                         isPersian = isPersian,
                         onToggleApp = { pkg -> viewModel.toggleBypassPackage(pkg) },
+                        onSelectMode = { mode ->
+                            viewModel.setSplitTunnel(bypassPackages.isNotEmpty(), mode, bypassPackages)
+                        },
                         onDismiss = { showSplitTunnel = false }
                     )
                 }
@@ -313,39 +317,75 @@ fun MainScreen(
 
 @Composable
 private fun CyberBackgroundCanvas() {
-    val infiniteTransition = rememberInfiniteTransition(label = "gridAnim")
+    val infiniteTransition = rememberInfiniteTransition(label = "bgAnim")
     val alphaAnim by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.6f,
+        initialValue = 0.4f,
+        targetValue = 0.8f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3000, easing = FastOutSlowInEasing),
+            animation = tween(3500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "bgGlow"
+    )
+
+    val particleOffset1 by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(9000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "p1"
+    )
+
+    val particleOffset2 by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(14000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "p2"
     )
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height
 
-        // Top glow
+        // Top Neon Aurora / Cyan Glow
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(NeonCyan.copy(alpha = 0.08f * alphaAnim), Color.Transparent),
+                colors = listOf(
+                    NeonCyan.copy(alpha = 0.14f * alphaAnim),
+                    NeonGreen.copy(alpha = 0.05f * alphaAnim),
+                    Color.Transparent
+                ),
                 center = Offset(width * 0.5f, 0f),
-                radius = width * 0.9f
+                radius = width * 0.95f
             )
         )
 
-        // Subtle grid lines
-        val step = 44.dp.toPx()
+        // Bottom faint violet glow
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFF8B5CF6).copy(alpha = 0.04f * alphaAnim),
+                    Color.Transparent
+                ),
+                center = Offset(width * 0.5f, height),
+                radius = width * 0.8f
+            )
+        )
+
+        // Subtle tech grid lines
+        val step = 42.dp.toPx()
         var x = 0f
         while (x < width) {
             drawLine(
-                color = Color(0xFF161D2E).copy(alpha = 0.35f),
+                color = Color(0xFF161E30).copy(alpha = 0.35f),
                 start = Offset(x, 0f),
                 end = Offset(x, height),
-                strokeWidth = 0.75f
+                strokeWidth = 0.8f
             )
             x += step
         }
@@ -353,12 +393,40 @@ private fun CyberBackgroundCanvas() {
         var y = 0f
         while (y < height) {
             drawLine(
-                color = Color(0xFF161D2E).copy(alpha = 0.35f),
+                color = Color(0xFF161E30).copy(alpha = 0.35f),
                 start = Offset(0f, y),
                 end = Offset(width, y),
-                strokeWidth = 0.75f
+                strokeWidth = 0.8f
             )
             y += step
+        }
+
+        // Floating cyber bubbles / glowing particles
+        val bubbles = listOf(
+            Triple(0.18f, particleOffset1, 5.dp.toPx()),
+            Triple(0.35f, (particleOffset1 + 0.5f) % 1f, 3.5.dp.toPx()),
+            Triple(0.72f, particleOffset2, 6.dp.toPx()),
+            Triple(0.85f, (particleOffset2 + 0.4f) % 1f, 4.dp.toPx()),
+            Triple(0.52f, (particleOffset1 + 0.25f) % 1f, 4.5.dp.toPx())
+        )
+
+        for ((posX, progress, radius) in bubbles) {
+            val curY = height * progress
+            val alpha = (1f - kotlin.math.abs(progress - 0.5f) * 2f).coerceIn(0.1f, 0.6f)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(NeonCyan.copy(alpha = alpha * 0.4f), Color.Transparent),
+                    center = Offset(width * posX, curY),
+                    radius = radius * 2.5f
+                ),
+                radius = radius * 2.5f,
+                center = Offset(width * posX, curY)
+            )
+            drawCircle(
+                color = NeonCyan.copy(alpha = alpha * 0.8f),
+                radius = radius * 0.5f,
+                center = Offset(width * posX, curY)
+            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.sfdnsapp.pro.ui.components
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -253,6 +254,21 @@ private fun launchApp(context: Context, packageName: String) {
         if (launchIntent != null) {
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(launchIntent)
+        } else {
+            // Installed but no launcher entry: fall back to its store listing
+            // instead of a dead PLAY button.
+            try {
+                val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+                market.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(market)
+            } catch (_: Exception) {
+                val web = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+                )
+                web.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(web)
+            }
         }
     } catch (e: Exception) {
         e.printStackTrace()

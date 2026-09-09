@@ -68,7 +68,8 @@ class DnsComposeUiTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("شروع اتصال").assertIsDisplayed()
+        composeTestRule.onNodeWithText("اتصال").assertIsDisplayed()
+        composeTestRule.onNodeWithText("برای شروع انتخاب کن").assertIsDisplayed()
     }
 
     @Test
@@ -87,8 +88,8 @@ class DnsComposeUiTest {
                 )
             }
         }
-        composeTestRule.onNodeWithText("22ms").assertIsDisplayed()
-        composeTestRule.onNodeWithText("00:05:30").assertIsDisplayed()
+        composeTestRule.onNodeWithText("22").assertIsDisplayed()
+        composeTestRule.onNodeWithText("پینگ").assertIsDisplayed()
     }
 
     @Test
