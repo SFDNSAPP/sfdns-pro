@@ -85,7 +85,7 @@ fun MetricsDashboard(
             MetricCard(
                 icon = Icons.Default.Shield,
                 iconTint = NeonPurple,
-                label = if (isPersian) "امنیت پروتکل" else "PROTECTION",
+                label = if (isPersian) "مجموع درخواست‌ها" else "TOTAL QUERIES",
                 value = metrics.uploadSpeed,
                 modifier = Modifier.weight(1f)
             )

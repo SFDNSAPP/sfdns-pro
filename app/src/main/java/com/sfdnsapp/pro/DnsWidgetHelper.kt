@@ -36,6 +36,7 @@ object DnsWidgetHelper {
     fun updateQuickWidgets(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         val isRunning = DnsVpnService.isRunning
         val prefs = context.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+        val fa = prefs.getSafeString(PrefKeys.KEY_LANGUAGE, "fa") != "en"
         val dnsName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "SFDNS Pro")
         val pingVal = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_PING, "")
         val pingDisplay = if (pingVal.isNotEmpty()) "⚡ $pingVal" else "⚡ —"
@@ -58,16 +59,16 @@ object DnsWidgetHelper {
             views.setTextViewText(R.id.widget_dns_name, dnsName)
 
             if (isRunning) {
-                views.setTextViewText(R.id.widget_status_text, "متصل ($pingDisplay)")
+                views.setTextViewText(R.id.widget_status_text, if (fa) "متصل ($pingDisplay)" else "Connected ($pingDisplay)")
                 views.setTextColor(R.id.widget_status_text, 0xFF10B981.toInt())
                 views.setImageViewResource(R.id.widget_status_dot, R.drawable.bg_widget_badge_on)
-                views.setTextViewText(R.id.widget_btn_toggle, "قطع")
+                views.setTextViewText(R.id.widget_btn_toggle, if (fa) "قطع" else "Stop")
                 views.setInt(R.id.widget_btn_toggle, "setBackgroundResource", R.drawable.bg_widget_button_connected)
             } else {
-                views.setTextViewText(R.id.widget_status_text, "قطع اتصال")
+                views.setTextViewText(R.id.widget_status_text, if (fa) "قطع اتصال" else "Disconnected")
                 views.setTextColor(R.id.widget_status_text, 0xFF94A3B8.toInt())
                 views.setImageViewResource(R.id.widget_status_dot, R.drawable.bg_widget_badge_off)
-                views.setTextViewText(R.id.widget_btn_toggle, "اتصال")
+                views.setTextViewText(R.id.widget_btn_toggle, if (fa) "اتصال" else "Connect")
                 views.setInt(R.id.widget_btn_toggle, "setBackgroundResource", R.drawable.bg_widget_button)
             }
 
@@ -78,6 +79,7 @@ object DnsWidgetHelper {
     fun updateDetailWidgets(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         val isRunning = DnsVpnService.isRunning
         val prefs = context.getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+        val fa = prefs.getSafeString(PrefKeys.KEY_LANGUAGE, "fa") != "en"
         val dnsName = prefs.getSafeString(PrefKeys.KEY_LAST_DNS_NAME, "SFDNS Pro")
         val primaryDns = prefs.getSafeString(PrefKeys.KEY_LAST_PRIMARY_DNS, "178.22.122.100")
         val secondaryDns = prefs.getSafeString(PrefKeys.KEY_LAST_SECONDARY_DNS, "185.51.200.2")
@@ -106,20 +108,20 @@ object DnsWidgetHelper {
             views.setOnClickPendingIntent(R.id.widget_detail_btn_toggle, pendingToggleIntent)
             views.setOnClickPendingIntent(R.id.widget_detail_root, pendingOpenAppIntent)
 
-            views.setTextViewText(R.id.widget_detail_dns_name, "سرور: $dnsName")
+            views.setTextViewText(R.id.widget_detail_dns_name, if (fa) "سرور: $dnsName" else "Server: $dnsName")
             views.setTextViewText(R.id.widget_detail_dns_ip, "IP: $primaryDns | $secondaryDns")
 
             if (isRunning) {
-                views.setTextViewText(R.id.widget_detail_status_text, "فعال ($pingDisplay)")
+                views.setTextViewText(R.id.widget_detail_status_text, if (fa) "فعال ($pingDisplay)" else "Active ($pingDisplay)")
                 views.setTextColor(R.id.widget_detail_status_text, 0xFF10B981.toInt())
                 views.setImageViewResource(R.id.widget_detail_status_dot, R.drawable.bg_widget_badge_on)
-                views.setTextViewText(R.id.widget_detail_btn_toggle, "🔴 قطع اتصال سریع دی‌ان‌اس")
+                views.setTextViewText(R.id.widget_detail_btn_toggle, if (fa) "🔴 قطع اتصال سریع دی‌ان‌اس" else "🔴 Quick Stop DNS")
                 views.setInt(R.id.widget_detail_btn_toggle, "setBackgroundResource", R.drawable.bg_widget_button_connected)
             } else {
-                views.setTextViewText(R.id.widget_detail_status_text, "غیرفعال")
+                views.setTextViewText(R.id.widget_detail_status_text, if (fa) "غیرفعال" else "Inactive")
                 views.setTextColor(R.id.widget_detail_status_text, 0xFFEF4444.toInt())
                 views.setImageViewResource(R.id.widget_detail_status_dot, R.drawable.bg_widget_badge_off)
-                views.setTextViewText(R.id.widget_detail_btn_toggle, "⚡ اتصال سریع دی‌ان‌اس")
+                views.setTextViewText(R.id.widget_detail_btn_toggle, if (fa) "⚡ اتصال سریع دی‌ان‌اس" else "⚡ Quick Connect DNS")
                 views.setInt(R.id.widget_detail_btn_toggle, "setBackgroundResource", R.drawable.bg_widget_button)
             }
 

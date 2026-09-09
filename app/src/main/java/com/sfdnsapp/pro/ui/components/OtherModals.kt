@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sfdnsapp.pro.BuildConfig
 import com.sfdnsapp.pro.ui.theme.CyberBgDarker
 import com.sfdnsapp.pro.ui.theme.CyberCardBorder
 import com.sfdnsapp.pro.ui.theme.CyberSurface
@@ -253,7 +254,7 @@ fun ChangelogModal(
                         Icon(Icons.Default.Notifications, contentDescription = null, tint = NeonCyan, modifier = Modifier.size(20.dp))
                     }
                     Text(
-                        text = if (isPersian) "تغییرات نسخه ۲.۵ (Changelog)" else "WHAT'S NEW IN v2.5",
+                        text = if (isPersian) "تغییرات نسخه ${BuildConfig.VERSION_NAME}" else "WHAT'S NEW IN v${BuildConfig.VERSION_NAME}",
                         color = TextPrimary,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Black

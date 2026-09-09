@@ -14,6 +14,15 @@ import android.service.quicksettings.TileService
 
 class DnsTileService : TileService() {
 
+    private fun isPersian(): Boolean {
+        return try {
+            getSharedPreferences(PrefKeys.PREFS_NAME, Context.MODE_PRIVATE)
+                .getSafeString(PrefKeys.KEY_LANGUAGE, "fa") != "en"
+        } catch (_: Exception) {
+            true
+        }
+    }
+
     override fun onStartListening() {
         super.onStartListening()
         updateTileState()
@@ -28,7 +37,7 @@ class DnsTileService : TileService() {
             // Optimistically update UI to disconnected
             tile.state = Tile.STATE_INACTIVE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                tile.subtitle = "Disconnecting..."
+                tile.subtitle = if (isPersian()) "در حال قطع..." else "Disconnecting..."
             }
             tile.updateTile()
 
@@ -45,7 +54,7 @@ class DnsTileService : TileService() {
             // Optimistically update UI to connecting
             tile.state = Tile.STATE_ACTIVE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                tile.subtitle = "Connecting..."
+                tile.subtitle = if (isPersian()) "در حال اتصال..." else "Connecting..."
             }
             tile.updateTile()
 
@@ -73,6 +82,12 @@ class DnsTileService : TileService() {
                 }
             } catch (e: Exception) {
                 android.util.Log.e("DnsTileService", "Failed to start service from quick tile", e)
+                // Don't leave the tile stuck on "Connecting...".
+                tile.state = Tile.STATE_INACTIVE
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    tile.subtitle = if (isPersian()) "خطا — برنامه را باز کنید" else "Failed — open app"
+                }
+                tile.updateTile()
             }
         }
         
@@ -99,7 +114,7 @@ class DnsTileService : TileService() {
         } else {
             tile.state = Tile.STATE_INACTIVE
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                tile.subtitle = "Disconnected"
+                tile.subtitle = if (isPersian()) "قطع اتصال" else "Disconnected"
             }
         }
         tile.updateTile()

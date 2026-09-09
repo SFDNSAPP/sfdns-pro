@@ -5,9 +5,15 @@ package com.sfdnsapp.pro
  * Fixed bugs:
  * 1) Migrated all SharedPreferences to unified PrefKeys.
  * 2) Protected outgoing DoH sockets via ProtectedSocketFactory and DnsVpnService.protectSocket.
- * 3) Expanded resolveDohEndpointUrl to support both primary and secondary DNS, and fallback to plain DNS on 4xx/5xx errors.
+ * 3) Verified DoH endpoint mappings (hostname-based URLs); unknown/custom IPs return null
+ *    so callers use plain DNS instead of a bogus IP-literal URL that would fail TLS.
  * 4) Hardened DoH packet parsing for IPv4 (fragments ignored) and IPv6 (extension headers traversal, IPv6 reply synthesis, mandatory UDP checksum).
  * 5) Safe stop handling and queries per second metric monitoring.
+ * 6) onRevoke() stops cleanly instead of pretending to stay connected.
+ * 7) Own UID is excluded from the tunnel (kills DoH-bootstrap recursion for
+ *    our own DoH/ping lookups) unless an "allowed apps" list is in use.
+ * 8) Real Kill Switch (no bypass) + real Anti-DPI (forced DoH) + network-change auto-restart.
+ * 9) Bounded DoH fan-out, single-close FD handling, fixed plain-SSL createSocket().
  */
 import android.app.Notification
 import android.app.NotificationChannel
@@ -15,6 +21,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -48,7 +56,16 @@ class DnsVpnService : VpnService() {
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
     private var speedJob: Job? = null
     private var drainJob: Job? = null
-    private var dohProxyJob: Job? = null
+    // Bounded dispatcher: one coroutine per DNS packet is fine, but never unbounded.
+    private val dohDispatcher = Dispatchers.IO.limitedParallelism(16)
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var restartDebounceJob: Job? = null
+    // Last established config, used for network-change auto-restart.
+    private var lastDnsName = "DNS"
+    private var lastPrimaryDns = "178.22.122.100"
+    private var lastSecondaryDns = "185.51.200.2"
+    private var lastPrimaryIpv6 = ""
+    private var lastSecondaryIpv6 = ""
 
     companion object {
         private const val TAG = "DnsVpnService"
@@ -86,10 +103,15 @@ class DnsVpnService : VpnService() {
         /**
          * Resolves the corresponding DoH endpoint URL for a given DNS server IP.
          * Supports both primary and secondary IP mappings.
+         *
+         * Returns null when the IP has no known DoH endpoint (custom/private IPs,
+         * Level3, ...). Callers must then skip DoH interception and use plain DNS:
+         * a guessed "https://<ip>/dns-query" URL would always fail TLS hostname
+         * verification and waste a full timeout on every single query.
          */
-        fun resolveDohEndpointUrl(dnsIp: String): String {
+        fun resolveDohEndpointUrl(dnsIp: String): String? {
             return when (dnsIp.trim()) {
-                "1.1.1.1", "1.0.0.1" -> "https://1.1.1.1/dns-query"
+                "1.1.1.1", "1.0.0.1" -> "https://cloudflare-dns.com/dns-query"
                 "8.8.8.8", "8.8.4.4" -> "https://dns.google/dns-query"
                 "9.9.9.9", "149.112.112.112" -> "https://dns.quad9.net/dns-query"
                 "178.22.122.100", "185.51.200.2" -> "https://free.shecan.ir/dns-query"
@@ -98,7 +120,8 @@ class DnsVpnService : VpnService() {
                 "10.202.10.202", "10.202.10.102" -> "https://dns.403.online/dns-query"
                 "185.55.226.26", "185.55.225.25" -> "https://dns.begzar.ir/dns-query"
                 "94.140.14.14", "94.140.15.15" -> "https://dns.adguard.com/dns-query"
-                else -> "https://${dnsIp.trim()}/dns-query"
+                "208.67.222.222", "208.67.220.220" -> "https://doh.opendns.com/dns-query"
+                else -> null
             }
         }
     }
@@ -119,9 +142,9 @@ class DnsVpnService : VpnService() {
         }
 
         override fun createSocket(): Socket {
-            val s = Socket()
-            protect(s)
-            return s
+            // Must return a real TLS socket (the old code returned a plain Socket,
+            // which would break the HTTPS handshake whenever this overload is used).
+            return protect(defaultFactory.createSocket())
         }
 
         override fun createSocket(s: Socket, host: String, port: Int, autoClose: Boolean): Socket {
@@ -163,6 +186,16 @@ class DnsVpnService : VpnService() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+    }
+
+    override fun onRevoke() {
+        // System revoked our VPN authorization (another VPN took over or the user
+        // revoked access). Stop cleanly and notify the UI instead of pretending
+        // to stay connected. Never auto-restart here: that would fight the user's
+        // explicit choice of another VPN.
+        Log.w(TAG, "VPN authorization revoked by system, stopping service")
+        stopVpn()
+        super.onRevoke()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -212,7 +245,13 @@ class DnsVpnService : VpnService() {
         val validSecondaryIpv6 = if (isValidIp(secondaryIpv6)) secondaryIpv6.trim() else ""
 
         val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, MODE_PRIVATE)
-        val isDoh = prefs.getSafeBoolean(PrefKeys.KEY_DOH_ENABLED, false)
+        // Anti-DPI forces DoH (TLS-encrypted DNS is what actually defeats DPI).
+        val dohRequested = prefs.getSafeBoolean(PrefKeys.KEY_DOH_ENABLED, false) ||
+                prefs.getSafeBoolean(PrefKeys.KEY_ANTI_DPI_ENABLED, false)
+        // DoH is only truly active when the chosen server has a verified endpoint;
+        // otherwise we stay in plain-DNS mode instead of failing every query.
+        val dohUrl = if (dohRequested) resolveDohEndpointUrl(primaryDns) else null
+        val isDoh = dohUrl != null
 
         isRunning = true
         createNotificationChannel()
@@ -220,24 +259,22 @@ class DnsVpnService : VpnService() {
         val displayDnsTitle = if (isDoh) "$dnsName (DoH)" else dnsName
         updateNotification(displayDnsTitle, primaryDns, "⚡ 0 Query/s")
 
-        if (isDoh) {
-            startDohProxy(primaryDns)
-        }
-
         try {
             val builder = Builder()
             builder.setSession("SFDNS Pro")
             builder.addAddress("10.0.0.1", 24)
 
-            // Local DNS-over-VPN Service: Allows non-DNS IP traffic to bypass the TUN interface
-            // so latency and bandwidth are unaffected for apps & gaming.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder.allowBypass()
-            }
-
             val isIpv6 = prefs.getSafeBoolean(PrefKeys.KEY_IPV6_ENABLED, false)
             val killSwitch = prefs.getSafeBoolean(PrefKeys.KEY_KILL_SWITCH, false)
             val carrierOpt = prefs.getSafeString(PrefKeys.KEY_CARRIER_OPT, "auto")
+
+            // Local DNS-over-VPN Service: Allows non-DNS IP traffic to bypass the TUN interface
+            // so latency and bandwidth are unaffected for apps & gaming.
+            // Kill Switch ON = no app is allowed to bypass the DNS tunnel (plus the
+            // network monitor below restarts the tunnel instantly after a drop).
+            if (!killSwitch && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder.allowBypass()
+            }
 
             // Dynamic high performance MTU tuning
             val mtuVal = when (carrierOpt) {
@@ -292,10 +329,10 @@ class DnsVpnService : VpnService() {
                 }
             }
 
-            // Enable Kill Switch blocking if configured
-            if (killSwitch && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                builder.setBlocking(true)
-            }
+            // NOTE: the old code called builder.setBlocking(true) here for "Kill Switch",
+            // but that API only toggles blocking I/O mode on the TUN fd — it does NOT
+            // block any traffic leaks. Real behavior lives in allowBypass() above plus
+            // the instant auto-restart in scheduleAutoRestart().
 
             // Apply Per-App Split Tunneling Rules
             val splitTunnelEnabled = prefs.getSafeBoolean(PrefKeys.KEY_SPLIT_TUNNEL_ENABLED, false)
@@ -315,17 +352,32 @@ class DnsVpnService : VpnService() {
                 }
             }
 
-            // Route DNS IPs into TUN interface for DoH intercept when DoH is active
-            if (isDoh) {
+            // Exclude our own UID from the tunnel (unless the user explicitly chose
+            // an "allowed apps" list, which is mutually exclusive with disallow rules).
+            // Otherwise our own DoH/ping DNS lookups would be captured by the TUN and
+            // re-enter DoH processing forever (bootstrap recursion), stalling queries.
+            val usesAllowedList = splitTunnelEnabled && splitTunnelAppsStr.isNotEmpty() &&
+                    splitTunnelMode == "allowed"
+            if (!usesAllowedList && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 try {
-                    if (primaryDns.isNotEmpty()) builder.addRoute(primaryDns, 32)
+                    builder.addDisallowedApplication(packageName)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to add route for DoH: $primaryDns", e)
+                    Log.w(TAG, "Could not exclude self from VPN: ${e.message}")
                 }
-                try {
-                    if (secondaryDns.isNotEmpty()) builder.addRoute(secondaryDns, 32)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to add route for DoH: $secondaryDns", e)
+            }
+
+            // Route DNS IPs into TUN interface for DoH intercept when DoH is active.
+            // IPv4 uses /32, IPv6 uses /128 (a /32 on IPv6 would swallow a huge subnet).
+            if (isDoh) {
+                val dohRouteIps = listOf(primaryDns, secondaryDns, validPrimaryIpv6, validSecondaryIpv6)
+                for (dnsIp in dohRouteIps) {
+                    if (dnsIp.isEmpty()) continue
+                    try {
+                        val prefix = if (IpValidator.isValidIpv6(dnsIp)) 128 else 32
+                        builder.addRoute(dnsIp, prefix)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to add route for DoH: $dnsIp", e)
+                    }
                 }
             }
 
@@ -343,32 +395,43 @@ class DnsVpnService : VpnService() {
                 val fd = vpnInterface?.fileDescriptor
                 if (fd != null) {
                     drainJob = serviceScope.launch(Dispatchers.IO) {
+                        // NOTE: both streams wrap the SAME ParcelFileDescriptor, so only the
+                        // input stream is ever closed here (which closes the shared FD).
+                        // Wrapping both in `use {}` would double-close the descriptor.
+                        val inputStream = FileInputStream(fd)
+                        val outputStream = FileOutputStream(fd)
                         try {
-                            FileInputStream(fd).use { inputStream ->
-                                FileOutputStream(fd).use { outputStream ->
-                                    val buffer = ByteArray(32768)
-                                    while (isRunning) {
-                                        val read = inputStream.read(buffer)
-                                        if (read <= 0) {
-                                            delay(15)
-                                            continue
-                                        }
+                            val buffer = ByteArray(32768)
+                            while (isRunning) {
+                                val read = inputStream.read(buffer)
+                                if (read <= 0) {
+                                    delay(15)
+                                    continue
+                                }
 
-                                        if (isDoh && read >= 20) {
-                                            val packetData = buffer.copyOf(read)
-                                            serviceScope.launch(Dispatchers.IO) {
-                                                processDohPacket(packetData, outputStream, primaryDns, secondaryDns)
-                                            }
-                                        }
+                                if (isDoh && read >= 20 && dohUrl != null) {
+                                    val packetData = buffer.copyOf(read)
+                                    serviceScope.launch(dohDispatcher) {
+                                        processDohPacket(packetData, outputStream, dohUrl, primaryDns, secondaryDns)
                                     }
                                 }
                             }
                         } catch (_: Exception) {
                             // Stream or file descriptor closed on VPN shutdown
+                        } finally {
+                            try { inputStream.close() } catch (_: Exception) {}
                         }
                     }
                 }
             }
+
+            // Remember the live config for network-change auto-restart, then go live.
+            lastDnsName = dnsName
+            lastPrimaryDns = primaryDns
+            lastSecondaryDns = secondaryDns
+            lastPrimaryIpv6 = validPrimaryIpv6
+            lastSecondaryIpv6 = validSecondaryIpv6
+            registerNetworkMonitor()
 
             notifyVpnStatusChanged("connected")
             startSpeedMonitor(dnsName, primaryDns)
@@ -383,10 +446,64 @@ class DnsVpnService : VpnService() {
         try {
             drainJob?.cancel()
             speedJob?.cancel()
-            dohProxyJob?.cancel()
+            restartDebounceJob?.cancel()
+            unregisterNetworkMonitor()
             vpnInterface?.close()
         } catch (_: Exception) {}
         vpnInterface = null
+    }
+
+    // -------------------------------------------------------------------------
+    // Network-change auto-reconnect: re-establishes the tunnel a moment after the
+    // default network switches (Wi-Fi <-> mobile) or drops and returns. Registration
+    // fires onAvailable() immediately, so the first callback is always ignored.
+    // -------------------------------------------------------------------------
+
+    private fun registerNetworkMonitor() {
+        if (networkCallback != null) return
+        try {
+            val cm = getSystemService(ConnectivityManager::class.java) ?: return
+            var isFirstFire = true
+            networkCallback = object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    if (isFirstFire) {
+                        isFirstFire = false
+                        return
+                    }
+                    scheduleAutoRestart("network available")
+                }
+
+                override fun onLost(network: Network) {
+                    scheduleAutoRestart("network lost")
+                }
+            }
+            cm.registerDefaultNetworkCallback(networkCallback!!)
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not register network monitor: ${e.message}")
+        }
+    }
+
+    private fun unregisterNetworkMonitor() {
+        try {
+            val cm = getSystemService(ConnectivityManager::class.java)
+            networkCallback?.let { cm?.unregisterNetworkCallback(it) }
+        } catch (_: Exception) {}
+        networkCallback = null
+    }
+
+    private fun scheduleAutoRestart(reason: String) {
+        val prefs = getSharedPreferences(PrefKeys.PREFS_NAME, MODE_PRIVATE)
+        val autoRestart = prefs.getSafeBoolean(PrefKeys.KEY_AUTO_RECONNECT, true) ||
+                prefs.getSafeBoolean(PrefKeys.KEY_KILL_SWITCH, false)
+        if (!autoRestart || !isRunning) return
+        restartDebounceJob?.cancel()
+        restartDebounceJob = serviceScope.launch {
+            delay(2000) // debounce Wi-Fi/mobile flapping
+            if (!isRunning) return@launch
+            restartDebounceJob = null // startVpn() cleans up; avoid self-cancel noise
+            Log.i(TAG, "Auto-restarting VPN after $reason")
+            startVpn(lastDnsName, lastPrimaryDns, lastSecondaryDns, lastPrimaryIpv6, lastSecondaryIpv6)
+        }
     }
 
     private fun startSpeedMonitor(dnsName: String, primaryDns: String) {
@@ -447,7 +564,7 @@ class DnsVpnService : VpnService() {
             .setShowWhen(true)
             .setUsesChronometer(true)
             .addAction(
-                android.R.drawable.ic_menu_close_clear_cancel,
+                R.drawable.ic_lightning,
                 disconnectText,
                 stopPendingIntent
             )
@@ -496,11 +613,16 @@ class DnsVpnService : VpnService() {
 
     /**
      * Executes DoH query with custom protected SSLSocketFactory and plain DNS fallback.
+     * [dohUrl] is a pre-resolved, verified endpoint — never a guessed IP-literal URL.
      */
-    private fun executeDohQuery(dnsQuery: ByteArray, primaryDns: String, secondaryDns: String): ByteArray? {
-        val dohUrlStr = resolveDohEndpointUrl(primaryDns)
+    private fun executeDohQuery(
+        dnsQuery: ByteArray,
+        dohUrl: String,
+        primaryDns: String,
+        secondaryDns: String
+    ): ByteArray? {
         try {
-            val url = URL(dohUrlStr)
+            val url = URL(dohUrl)
             val conn = url.openConnection() as HttpsURLConnection
             conn.sslSocketFactory = ProtectedSslSocketFactory()
             conn.requestMethod = "POST"
@@ -541,6 +663,7 @@ class DnsVpnService : VpnService() {
     private fun processDohPacket(
         packet: ByteArray,
         outputStream: FileOutputStream,
+        dohUrl: String,
         primaryDns: String,
         secondaryDns: String
     ) {
@@ -580,7 +703,7 @@ class DnsVpnService : VpnService() {
                 val dnsQuery = packet.copyOfRange(dnsOffset, dnsOffset + dnsLen)
                 dohQueryCounter.incrementAndGet()
 
-                val dnsResponse = executeDohQuery(dnsQuery, primaryDns, secondaryDns) ?: return
+                val dnsResponse = executeDohQuery(dnsQuery, dohUrl, primaryDns, secondaryDns) ?: return
 
                 // Synthesize IPv4 UDP Response packet
                 val totalLen = 20 + 8 + dnsResponse.size
@@ -686,7 +809,7 @@ class DnsVpnService : VpnService() {
                 val dnsQuery = packet.copyOfRange(dnsOffset, dnsOffset + dnsLen)
                 dohQueryCounter.incrementAndGet()
 
-                val dnsResponse = executeDohQuery(dnsQuery, primaryDns, secondaryDns) ?: return
+                val dnsResponse = executeDohQuery(dnsQuery, dohUrl, primaryDns, secondaryDns) ?: return
 
                 // Synthesize IPv6 UDP Response packet
                 val payloadLen = 8 + dnsResponse.size
@@ -814,65 +937,6 @@ class DnsVpnService : VpnService() {
         }
         val checksum = sum.inv() and 0xFFFF
         return if (checksum == 0) 0xFFFF else checksum
-    }
-
-    private fun startDohProxy(primaryDns: String) {
-        dohProxyJob?.cancel()
-        dohProxyJob = serviceScope.launch(Dispatchers.IO) {
-            val dohUrlStr = resolveDohEndpointUrl(primaryDns)
-
-            var serverSocket: DatagramSocket? = null
-            try {
-                serverSocket = DatagramSocket(0, InetAddress.getByName("127.0.0.1"))
-                protectSocket(serverSocket)
-                serverSocket.soTimeout = 2000
-                val receiveBuffer = ByteArray(4096)
-
-                while (isRunning) {
-                    try {
-                        val packet = DatagramPacket(receiveBuffer, receiveBuffer.size)
-                        serverSocket.receive(packet)
-                        val queryBytes = packet.data.copyOf(packet.length)
-                        val clientAddress = packet.address
-                        val clientPort = packet.port
-
-                        serviceScope.launch(Dispatchers.IO) {
-                            try {
-                                val url = URL(dohUrlStr)
-                                val conn = url.openConnection() as HttpsURLConnection
-                                conn.sslSocketFactory = ProtectedSslSocketFactory()
-                                conn.requestMethod = "POST"
-                                conn.setRequestProperty("Content-Type", "application/dns-message")
-                                conn.setRequestProperty("Accept", "application/dns-message")
-                                conn.connectTimeout = 1500
-                                conn.readTimeout = 1500
-                                conn.doOutput = true
-                                conn.doInput = true
-
-                                conn.outputStream.use { os ->
-                                    os.write(queryBytes)
-                                    os.flush()
-                                }
-
-                                if (conn.responseCode == 200) {
-                                    val responseBytes = conn.inputStream.use { it.readBytes() }
-                                    val replyPacket = DatagramPacket(responseBytes, responseBytes.size, clientAddress, clientPort)
-                                    serverSocket?.send(replyPacket)
-                                }
-                            } catch (_: Exception) {}
-                        }
-                    } catch (_: java.net.SocketTimeoutException) {
-                        // Loop timeout
-                    } catch (e: Exception) {
-                        if (!isRunning) break
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "startDohProxy socket exception", e)
-            } finally {
-                try { serverSocket?.close() } catch (_: Exception) {}
-            }
-        }
     }
 
     private fun notifyVpnStatusChanged(status: String) {

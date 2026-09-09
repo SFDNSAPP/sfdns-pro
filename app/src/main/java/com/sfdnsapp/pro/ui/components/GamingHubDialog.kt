@@ -106,7 +106,7 @@ fun GamingHubDialog(
                             fontWeight = FontWeight.Black
                         )
                         Text(
-                            text = if (isPersian) "پایش زنده سرورهای بازی‌های آنلاین" else "Live Game Server Latency Monitor",
+                            text = if (isPersian) "پایش تقریبی تأخیر سرورهای بازی" else "Approximate Game Server Latency",
                             color = TextDim,
                             fontSize = 11.sp
                         )
@@ -145,10 +145,12 @@ fun GamingHubDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(DnsRepository.popularGames, key = { it.id }) { game ->
-                    val pingVal = gamePingMap[game.id] ?: game.defaultPing
+                    // Never show the static defaultPing as if it were measured.
+                    val pingVal = gamePingMap[game.id]
                     val isInstalled = installedPackages.contains(game.packageName)
 
                     val pingColor = when {
+                        pingVal == null -> TextDim
                         pingVal in 1..40 -> PingFast
                         pingVal in 41..70 -> PingMedium
                         else -> PingSlow
@@ -212,7 +214,7 @@ fun GamingHubDialog(
                                         .padding(horizontal = 7.dp, vertical = 4.dp)
                                 ) {
                                     Text(
-                                        text = "${pingVal}ms",
+                                        text = if (pingVal != null && pingVal > 0) "${pingVal}ms" else "—",
                                         color = pingColor,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,

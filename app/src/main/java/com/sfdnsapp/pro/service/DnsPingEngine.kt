@@ -18,6 +18,13 @@ object DnsPingEngine {
 
     private val pingCache = ConcurrentHashMap<String, Pair<Long, Int>>()
     private const val CACHE_DURATION_MS = 3500L
+    private const val MAX_CACHE_SIZE = 300
+
+    private fun putCached(key: String, now: Long, value: Int) {
+        // Bound the cache: custom servers + game hosts would otherwise grow it forever.
+        if (pingCache.size >= MAX_CACHE_SIZE) pingCache.clear()
+        pingCache[key] = Pair(now, value)
+    }
 
     suspend fun pingDnsIp(ip: String): Int = withContext(Dispatchers.IO) {
         if (ip.isBlank() || ip == "0.0.0.0") return@withContext -1
@@ -84,7 +91,7 @@ object DnsPingEngine {
         }
 
         if (bestPing < Int.MAX_VALUE) {
-            pingCache[cacheKey] = Pair(now, bestPing)
+            putCached(cacheKey, now, bestPing)
             return@withContext bestPing
         }
 
@@ -112,7 +119,7 @@ object DnsPingEngine {
         }
 
         if (tcpResult > 0) {
-            pingCache[cacheKey] = Pair(now, tcpResult)
+            putCached(cacheKey, now, tcpResult)
         }
         return@withContext tcpResult
     }
@@ -133,7 +140,7 @@ object DnsPingEngine {
                 socket.connect(InetSocketAddress(address, port), 1200)
                 val elapsed = ((System.nanoTime() - startTime) / 1_000_000).toInt()
                 val result = if (elapsed > 0) elapsed else 1
-                pingCache[cacheKey] = Pair(now, result)
+                putCached(cacheKey, now, result)
                 return@withContext result
             }
         } catch (e: Exception) {

@@ -179,7 +179,7 @@ object DnsRepository {
             name = "Counter Strike 2",
             faName = "کانتر استرایک ۲",
             host = "steampowered.com",
-            packageName = "com.valvesoftware.steamcompanion",
+            packageName = "com.valvesoftware.android.steam.community",
             defaultPing = 39
         ),
         GameItem(
@@ -187,7 +187,7 @@ object DnsRepository {
             name = "Dota 2",
             faName = "دوتا ۲ (Dota 2)",
             host = "dota2.com",
-            packageName = "com.valvesoftware.steamcompanion",
+            packageName = "com.valvesoftware.android.steam.community",
             defaultPing = 44
         ),
         GameItem(

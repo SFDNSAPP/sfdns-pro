@@ -236,8 +236,10 @@ fun ServerListBottomSheet(
             ) {
                 items(filteredServers, key = { it.id }) { server ->
                     val isSelected = server.id == selectedServer.id
-                    val pingVal = pingMap[server.id] ?: server.defaultPing
+                    // Never show the static defaultPing as if it were measured.
+                    val pingVal = pingMap[server.id]
                     val pingColor = when {
+                        pingVal == null -> TextDim
                         pingVal in 1..28 -> PingFast
                         pingVal in 29..55 -> PingMedium
                         else -> PingSlow
@@ -327,7 +329,7 @@ fun ServerListBottomSheet(
                                         .padding(horizontal = 6.dp, vertical = 3.dp)
                                 ) {
                                     Text(
-                                        text = "${pingVal}ms",
+                                        text = if (pingVal != null && pingVal > 0) "${pingVal}ms" else "—",
                                         color = pingColor,
                                         fontSize = 10.5.sp,
                                         fontWeight = FontWeight.Bold,

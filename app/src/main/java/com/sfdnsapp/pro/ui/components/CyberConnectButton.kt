@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -148,7 +149,8 @@ fun CyberConnectButton(
                 .border(2.dp, activeColor.copy(alpha = 0.7f), CircleShape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(bounded = true, color = activeColor)
+                    indication = ripple(bounded = true, color = activeColor),
+                    role = Role.Button
                 ) {
                     onClick()
                 },

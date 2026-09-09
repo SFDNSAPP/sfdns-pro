@@ -131,10 +131,11 @@ fun ActiveServerCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val pingVal = livePing ?: server.defaultPing
+                // Never show the static defaultPing as if it were measured.
                 val pingColor = when {
-                    pingVal in 1..28 -> PingFast
-                    pingVal in 29..55 -> PingMedium
+                    livePing == null -> TextDim
+                    livePing in 1..28 -> PingFast
+                    livePing in 29..55 -> PingMedium
                     else -> PingSlow
                 }
 
@@ -156,7 +157,7 @@ fun ActiveServerCard(
                                 .background(pingColor)
                         )
                         Text(
-                            text = "${pingVal}ms",
+                            text = if (livePing != null && livePing > 0) "${livePing}ms" else "—",
                             color = pingColor,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,

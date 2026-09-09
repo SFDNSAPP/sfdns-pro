@@ -29,6 +29,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,6 +102,18 @@ fun MainScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Feedback when a server/setting change triggers an in-place tunnel restart.
+    LaunchedEffect(viewModel) {
+        viewModel.restartRequests.collect {
+            val fa = viewModel.settings.value.language != "en"
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    if (fa) "⏳ در حال اعمال و اتصال مجدد..." else "⏳ Applying & reconnecting..."
+                )
+            }
+        }
+    }
 
     CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
         Scaffold(
@@ -197,7 +210,9 @@ fun MainScreen(
                             }
                         },
                         onPingAll = { viewModel.pingAllServers() },
-                        onOpenAddCustom = { showCustomDns = true },
+                        // Close the list first: two stacked bottom sheets break
+                        // back-press/scrim behavior and confuse navigation.
+                        onOpenAddCustom = { showServerList = false; showCustomDns = true },
                         onDeleteCustom = { id -> viewModel.deleteCustomDns(id) },
                         onDismiss = { showServerList = false }
                     )
@@ -273,6 +288,7 @@ fun MainScreen(
                         onToggleAntiDpi = { viewModel.toggleAntiDpi(it) },
                         onToggleAutoConnect = { viewModel.toggleAutoConnect(it) },
                         onToggleKillSwitch = { viewModel.toggleKillSwitch(it) },
+                        onToggleWidgetAutoSelect = { viewModel.toggleWidgetAutoSelect(it) },
                         onSelectCarrier = { viewModel.setCarrierOpt(it) },
                         onSelectLanguage = { viewModel.updateLanguage(it) },
                         onDismiss = { showSettings = false }

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.VpnKey
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +69,7 @@ fun SettingsDialog(
     onToggleAutoReconnect: (Boolean) -> Unit = {},
     onToggleAutoConnect: (Boolean) -> Unit = onToggleAutoReconnect,
     onToggleKillSwitch: (Boolean) -> Unit = {},
+    onToggleWidgetAutoSelect: (Boolean) -> Unit = {},
     onSelectCarrier: (String) -> Unit = {},
     onSelectLanguage: (String) -> Unit,
     onDismiss: () -> Unit
@@ -263,7 +265,7 @@ fun SettingsDialog(
             SettingToggleCard(
                 icon = Icons.Default.GppBad,
                 title = if (isPersian) "قطع خودکار ترافیک (Kill Switch)" else "Kill Switch Protection",
-                description = if (isPersian) "مسدودسازی نشت ترافیک در صورت قطع اتصال تونل" else "Block unencrypted leaks when connection drops",
+                description = if (isPersian) "جلوگیری از دور زدن تونل DNS + اتصال مجدد فوری پس از قطعی" else "Prevent DNS bypass + instant reconnect on drops",
                 isChecked = settings.isKillSwitchEnabled,
                 onCheckedChange = onToggleKillSwitch
             )
@@ -274,7 +276,7 @@ fun SettingsDialog(
             SettingToggleCard(
                 icon = Icons.Default.Lock,
                 title = if (isPersian) "رمزنگاری DNS-over-HTTPS (DoH)" else "DNS-over-HTTPS (DoH)",
-                description = if (isPersian) "رمزگذاری درخواست‌های DNS جهت جلوگیری از شنود و جعل" else "Encrypt DNS queries via HTTPS",
+                description = if (isPersian) "رمزگذاری درخواست‌های DNS (در صورت پشتیبانی سرور از DoH)" else "Encrypt DNS queries via HTTPS (if server supports DoH)",
                 isChecked = settings.isDohEnabled,
                 onCheckedChange = onToggleDoh
             )
@@ -296,7 +298,7 @@ fun SettingsDialog(
             SettingToggleCard(
                 icon = Icons.Default.Security,
                 title = if (isPersian) "حالت ضد فیلترینگ هوشمند (Anti-DPI)" else "Smart Anti-DPI Bypass Mode",
-                description = if (isPersian) "تغییر ساختار پکت‌های DNS برای عبور از فیلترینگ عمیق" else "Fragment packets to evade Deep Packet Inspection",
+                description = if (isPersian) "فعال‌سازی اجباری DoH برای عبور از بازرسی عمیق بسته‌ها (DPI)" else "Force DoH encryption to evade Deep Packet Inspection",
                 isChecked = settings.isAntiDpiEnabled,
                 onCheckedChange = onToggleAntiDpi
             )
@@ -310,6 +312,17 @@ fun SettingsDialog(
                 description = if (isPersian) "شروع خودکار پس از بوت دستگاه و اتصال مجدد پس از قطعی اینترنت" else "Auto-start on device boot and reconnect on network switches",
                 isChecked = settings.isAutoConnectEnabled,
                 onCheckedChange = onToggleAutoConnect
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Widget Smart Auto-Select
+            SettingToggleCard(
+                icon = Icons.Default.Widgets,
+                title = if (isPersian) "انتخاب هوشمند سریع‌ترین سرور در ویجت" else "Widget Smart Auto-Select",
+                description = if (isPersian) "تست خودکار و اتصال به سریع‌ترین سرور با لمس ویجت" else "Benchmark and connect to the fastest server on widget tap",
+                isChecked = settings.isWidgetAutoSelectEnabled,
+                onCheckedChange = onToggleWidgetAutoSelect
             )
 
             Spacer(modifier = Modifier.height(12.dp))
